@@ -12,118 +12,101 @@ from . import event_node
 logging.getLogger('request').setLevel(logging.DEBUG)
 logging.basicConfig(level=logging.DEBUG)
 
+_events = event_node.EventNode()
 
-class Namespace(BaseNamespace):
+_vars = {}
+_vars["io"] = None
+_vars["threadId"] = None
+
+_outgoing = Queue.Queue()
+_lock = threading.Lock()
+
+on = _events.on
+
+class _Namespace(BaseNamespace):
 
   def on_message(self, message):
     if type(message) != dict: return
-    Socket.events.trigger('message', message)
+    _events.trigger('message', message)
 
   def on_connect(self):
-    Socket.events.trigger('connected')
+    _events.trigger('connected')
 
   def on_disconnect(self):
-    Socket.events.trigger('disconnected')
+    _events.trigger('disconnected')
     
 
 class Timeout(Exception):
-  pass
+  pass  
 
 
-class Socket(object):
+def _disconnect():
+  _lock.acquire()
+  if _vars["io"]:
+    _vars["io"].disconnect()
+    _vars["io"] = None
+  _lock.release()
 
-  events = event_node.EventNode()
-
-  isRunning = False
-    
-  _lock = threading.Lock()
-  _io = None
-  _outgoing = Queue.Queue()
-
-
-  @classmethod
-  def _disconnect(cls):
-    cls._lock.acquire()
-    if cls._io:
-      cls._io.disconnect()
-      cls._io = None
-    cls._lock.release()
-
-  @classmethod
-  def _connect(cls, host='http://localhost', port=9000, token=None):
-    cls._lock.acquire()
-    if cls._io:
-      cls._io.disconnect()
-      cls._io = None
-    start = time.time()
-    while True:
-      if time.time() - start > 5:
-        if cls._io:
-          cls._io.disconnect()
-          cls._io = None
-        cls._lock.release()        
-        raise Timeout()
-      if not cls._io:
-        try:
-          cls._io = SocketIO(host, port, Namespace=Namespace, wait_for_connection=False)
-        except:
-          cls._io = None
-          time.sleep(1)
+def _connect(host, port, token):
+  _disconnect()
+  _lock.acquire()
+  start = time.time()
+  while time.time() - start < 5:
+    if not _vars["io"]:
+      try:
+        _vars["io"] = SocketIO(host, port, params={ "token": token }, Namespace=_Namespace)
+      except:
+        _vars["io"] = None
+        time.sleep(1)
         continue
-      if cls._io.connected:
-        cls._lock.release()
-        break
-      time.sleep(.1)
+    if _vars["io"].connected:
+      return _lock.release()
+    time.sleep(.1)
+  _lock.release()
+  _disconnect()
 
-  @classmethod
-  def send(cls, message):
-    cls._outgoing.put(message)
+def send(message):
+  _outgoing.put(message)
 
-  @classmethod
-  def _processIncoming(cls):
-    if not cls._io:
-      return
-    try:
-      cls._io.wait(.1)
-    except:
-      time.sleep(1)
+def _process_incoming():
+  if not _vars["io"]:
+    return
+  try:
+    _vars["io"].wait(.1)
+  except:
+    time.sleep(1)
 
-  @classmethod
-  def _processOutgoing(cls):
-    try:
-      message = cls._outgoing.get_nowait()
-    except Queue.Empty:
-      return
-    if not cls._io:
-      return
-    cls._io.emit('message', message)
+def _process_outgoing():
+  try:
+    message = _outgoing.get_nowait()
+  except Queue.Empty:
+    return
+  if not _vars["io"]:
+    return
+  _vars["io"].emit('message', message)
     
-  @classmethod
-  def _loop(cls):
-    threadId = cls._threadId
-    cls._lock.release()
-    while True:
-      cls._lock.acquire()
-      if threadId != cls._threadId:
-        cls._lock.release()
-        return
-      cls._processIncoming()
-      cls._processOutgoing()
-      cls._lock.release()
-      time.sleep(.1)
+def _loop():
+  threadId = _vars["threadId"]
+  _lock.release()
+  while True:
+    _lock.acquire()
+    if threadId != _vars["threadId"]:
+      _lock.release()
+      return
+    _process_incoming()
+    _process_outgoing()
+    _lock.release()
+    time.sleep(.1)
 
-  @classmethod
-  def start(cls, **kwargs):
-    cls._lock.acquire()
-    cls._threadId = random.random()
-    thread = threading.Thread(target=cls._loop)
-    thread.start()
-    cls._connect(**kwargs)
+def start(*args):
+  _lock.acquire()
+  _vars["threadId"] = random.random()
+  threading.Thread(target=_loop).start()
+  _connect(*args)
 
-  @classmethod
-  def stop(cls):
-    cls._lock.acquire()
-    cls._threadId = None
-    cls._lock.release()
-    cls._disconnect()
+def stop():
+  _lock.acquire()
+  _threadId = None
+  _lock.release()
+  _disconnect()
 

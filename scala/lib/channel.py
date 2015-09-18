@@ -18,8 +18,9 @@ class Channel(object):
     self._name = name
     self._listeners = []
     self._responses = {}
+    self._responders = {}
     self._lock = threading.Lock()
-    socket.Socket.events.on('message', self._on_message)
+    socket.on('message', self._on_message)
 
   def _clean_responses(self):
     """ Clean up responses that have not been processed """
@@ -29,15 +30,57 @@ class Channel(object):
       if now - response["time"] > 10:
         responses.pop(id, None)
     self._lock.release()
-    
-  def _on_message(self, message):
-    self._clean_responses()
+
+  def _on_response(self, message):
     self._lock.acquire()
-    if message["type"] == "response":
-      message["time"] = time.time()
-      self._responses[message["id"]] = message
+    message["time"] = time.time()
+    self._responses[message["id"]] = message
+    self._lock.release()
+
+  def _on_broadcast(self, message):
+    self._lock.acquire()
+    callbacks = self._listeners.get(message["name"], None)
+    if not callbacks:
+      return self._lock.release()
+    for callback in callbacks:
+      try:
+        callback(message.payload)
+      except:
+        pass
+    self._lock.release()
+
+  def _on_request(self, message):
+    self._lock.acquire()
+    if not self._responders.get(message["name"]):
+      return self._lock.release()
+    callback = self._responders.get(message["name"])
+    try:
+      payload = callback(message.payload)
+    except:
+      socket.send({
+        "type": "response",
+        "id": message["id"],
+        "error": "An error occured"
+      })
+    else:
+      socket.send({
+        "type": "response",
+        "id": message["id"],
+        "payload": payload
+      })
     self._lock.release()
     
+  def _on_message(self, message):
+    if message["type"] == "response":
+      self._clean_responses()
+      return self._on_response(message)
+    if message["channel"] != self._name:
+      return
+    if message["type"] == "broadcast":
+      self._on_broadcast(message)
+    elif message["type"] == "request":
+      self._on_request(message)
+      
   def request(self, name=None, target=None, payload=None):
     message = {}
     message["type"] = "request"
@@ -47,7 +90,7 @@ class Channel(object):
     message["payload"] = payload
     message["device"] = {} # This will be deprecated
     message["device"]["target"] = target
-    socket.Socket.send(message)
+    socket.send(message)
     start = time.time()
     while time.time() - start < 10:
       self._lock.acquire()
@@ -67,7 +110,7 @@ class Channel(object):
 
 
   def broadcast(self, name=None, payload=None):
-    socket.Socket.send({
+    socket.send({
       'type': 'broadcast',
       'channel': self._name,
       'name': name,
@@ -79,3 +122,5 @@ class Channel(object):
       self._listeners[name] = []
     self._listeners[name].append(callback)
 
+  def respond(self, name=None, callback=None):
+    self._responders[name] = callback

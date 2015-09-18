@@ -1,7 +1,10 @@
-from lib import socket as _socket
-from lib import event_node as _event_node
+from lib import socket
+from lib import event_node
+from lib import credentials
+from lib import config
 
-_events = _event_node.EventNode()
+_events = event_node.EventNode()
+on = _events.on
 
 def _trigger_online():
   _events.trigger('online')
@@ -9,16 +12,30 @@ def _trigger_online():
 def _trigger_offline():
   _events.trigger('offline')
   
-_socket.Socket.events.on('connected', _trigger_online)
-_socket.Socket.events.on('disconnected', _trigger_offline)
+socket.on('connected', _trigger_online)
+socket.on('disconnected', _trigger_offline)
 
-on = _events.on
-
-def start(host='localhost', port=9000, uuid=None, secret=None):
-  _socket.Socket.start(host=host, port=port)
-
+def start(
+    host='localhost',
+    port=9000,
+    uuid=None,
+    secret=None,
+    username=None,
+    password=None,
+    organization=None,
+    token=None,
+    **kwargs):
+  config.set(host=host, port=port)
+  if uuid and secret:
+    credentials.set_device_credentials(uuid, secret)
+  elif username and password and organization:
+    credentials.set_user_credentials(username, password, organization)
+  elif token:
+    credentials.set_token(token)
+  socket.start(host, port, credentials.get_token())
+  
 def stop():
-  _socket.Socket.stop()
+  socket.stop()
 
 
   
