@@ -2,7 +2,10 @@ machine:
   python:
     version: 2.7.10
 
+dependencies:
+  pre:
+    - pip install nose
 
 test:
   override:
-    - chmod +x ./test.sh && ./test.sh
+    - nosetests
