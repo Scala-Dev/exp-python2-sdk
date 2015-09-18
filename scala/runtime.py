@@ -16,7 +16,7 @@ socket.on('connected', _trigger_online)
 socket.on('disconnected', _trigger_offline)
 
 def start(
-    host='localhost',
+    host='http://localhost',
     port=9000,
     uuid=None,
     secret=None,

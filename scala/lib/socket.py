@@ -88,11 +88,8 @@ def _process_outgoing():
 def _loop():
   threadId = _vars["threadId"]
   _lock.release()
-  while True:
+  while threadId == _vars["threadId"]:    
     _lock.acquire()
-    if threadId != _vars["threadId"]:
-      _lock.release()
-      return
     _process_incoming()
     _process_outgoing()
     _lock.release()
@@ -106,7 +103,8 @@ def start(*args):
 
 def stop():
   _lock.acquire()
-  _threadId = None
+  _vars["threadId"] = None
   _lock.release()
   _disconnect()
+
 
