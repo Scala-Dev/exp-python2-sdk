@@ -5,6 +5,8 @@ machine:
 dependencies:
   pre:
     - pip install nose
+  post:
+    - rm -r ~/virtualenvs
 
 test:
   override:
