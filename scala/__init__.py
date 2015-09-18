@@ -1,31 +1,17 @@
-import time
-import threading
-from lib import socket
+""" Main module for Scala EXP SDK """
+
+#from lib import socket as _socket
 
 
-credentials = {}
-
-def init(host='', uuid='', secret=None):
-    # Save credentials
-    # Generate credentials
-    # Start socket connection
-    credentials['uuid'] = uuid
-    credentials['secret'] = secret
-    credentials['host'] = host
+#def init(host='localhost', port=9000, uuid=None, secret=None):
+  # TODO: Need to generate token from credentials.
+  # Connect.
+#  _socket.Socket.connect(host=host, port=port)
 
 
-
-def mainEventLoop():
-  #socket.setSomething('HI bob!')
-  print 'A'
-  time.sleep(4)
-  mainEventLoop()
+#_socket.Socket.start()  
 
 
-
-socket.start()  
-  
-mainEventLoop()
 
 
 

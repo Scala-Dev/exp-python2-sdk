@@ -2,78 +2,128 @@ import Queue
 import threading
 import time
 import logging
+import random
+
 from socketIO_client import SocketIO, BaseNamespace
+
+from . import event_node
+
+
 logging.getLogger('request').setLevel(logging.DEBUG)
 logging.basicConfig(level=logging.DEBUG)
 
 
+class Namespace(BaseNamespace):
+
+  def on_message(self, message):
+    if type(message) != dict: return
+    Socket.events.trigger('message', message)
+
+  def on_connect(self):
+    Socket.events.trigger('connected')
+
+  def on_disconnect(self):
+    Socket.events.trigger('disconnected')
+    
+
+class Timeout(Exception):
+  pass
+
+
 class Socket(object):
-  socketIO = None
+
+  events = event_node.EventNode()
+
+  isRunning = False
+    
+  _lock = threading.Lock()
+  _io = None
+  _outgoing = Queue.Queue()
+
 
   @classmethod
-  def connect(cls, host='', port=9000):
-    cls.socketIO = SocketIO('http://localhost', 9000)
+  def _disconnect(cls):
+    cls._lock.acquire()
+    if cls._io:
+      cls._io.disconnect()
+      cls._io = None
+    cls._lock.release()
 
-  def disconnect():
-    pass
+  @classmethod
+  def _connect(cls, host='http://localhost', port=9000, token=None):
+    cls._lock.acquire()
+    if cls._io:
+      cls._io.disconnect()
+      cls._io = None
+    start = time.time()
+    while True:
+      if time.time() - start > 5:
+        if cls._io:
+          cls._io.disconnect()
+          cls._io = None
+        cls._lock.release()        
+        raise Timeout()
+      if not cls._io:
+        try:
+          cls._io = SocketIO(host, port, Namespace=Namespace, wait_for_connection=False)
+        except:
+          cls._io = None
+          time.sleep(1)
+        continue
+      if cls._io.connected:
+        cls._lock.release()
+        break
+      time.sleep(.1)
 
-incoming = Queue.Queue()
-outgoing = Queue.Queue()
-operations = Queue.Queue()
+  @classmethod
+  def send(cls, message):
+    cls._outgoing.put(message)
 
-def loop():
-  while True:
-    processOperations()
-    processOutgoing()
-    processIncoming()
+  @classmethod
+  def _processIncoming(cls):
+    if not cls._io:
+      return
+    try:
+      cls._io.wait(.1)
+    except:
+      time.sleep(1)
 
-def processOperations():
-  try:
-    operation = operations.get_nowait()
-  except Queue.Empty:
-    return
-  if operation['type'] == 'connect':
-    Socket.socketIO = SocketIO('http://localhost', 9000)
-  elif operation['type'] == 'disconnect':
-    pass
+  @classmethod
+  def _processOutgoing(cls):
+    try:
+      message = cls._outgoing.get_nowait()
+    except Queue.Empty:
+      return
+    if not cls._io:
+      return
+    cls._io.emit('message', message)
+    
+  @classmethod
+  def _loop(cls):
+    threadId = cls._threadId
+    cls._lock.release()
+    while True:
+      cls._lock.acquire()
+      if threadId != cls._threadId:
+        cls._lock.release()
+        return
+      cls._processIncoming()
+      cls._processOutgoing()
+      cls._lock.release()
+      time.sleep(.1)
 
-def processOutgoing():
-  try:
-    message = outgoing.get_nowait()
-  except Queue.Empty:
-    return
-  if not Socket.socketIO: return
-  Socket.socketIO.emit('message', message)
+  @classmethod
+  def start(cls, **kwargs):
+    cls._lock.acquire()
+    cls._threadId = random.random()
+    thread = threading.Thread(target=cls._loop)
+    thread.start()
+    cls._connect(**kwargs)
 
-def processIncoming():
-  if not Socket.socketIO: return
-  Socket.socketIO.wait(1)
+  @classmethod
+  def stop(cls):
+    cls._lock.acquire()
+    cls._threadId = None
+    cls._lock.release()
+    cls._disconnect()
 
-
-
-def emit():
-  print 'EMITTING'
-  socketIO.emit('message', {
-    'name': 'getCurrentExperience',
-    'channel': 'system',
-    'type': 'request',
-    'id': '12312424'
-  })
-  socketIO = None
-  time.sleep(1)
-  emit()
-
-def connect():
-  print 'WAITING'
-  socketIO.wait()
-
-def start():
-  thread = threading.Thread(target=loop)
-  thread.start()
-
-
-operations.put({'type': 'connect'})
-outgoing.put({ 'type': 'request', 'name': 'getCurrentExperience', 'channel': 'system', 'id': '123'})
-outgoing.put({ 'type': 'request', 'name': 'getCurrentExperience', 'channel': 'system', 'id': '123'})
-outgoing.put({ 'type': 'request', 'name': 'getCurrentExperience', 'channel': 'system', 'id': '123'})
-outgoing.put({ 'type': 'request', 'name': 'getCurrentExperience', 'channel': 'system', 'id': '123'})  
