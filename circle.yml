@@ -2,11 +2,7 @@ machine:
   python:
     version: 2.7.10
 
-dependencies:
-  pre:
-    - pip install PyJWT
-    - pip install requests
 
 test:
   override:
-    - ./test.sh
+    - chmod +x ./test.sh && ./test.sh
