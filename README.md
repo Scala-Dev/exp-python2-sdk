@@ -35,9 +35,7 @@ scala.runtime.start(uuid="[uuid]", secret="[secret]")
 ## scala.runtime.stop()
 A socket connection is made to EXP that is non-blocking. To end the connection and to stop threads spawned by the SDK call ```scala.runtime.stop()```.
 
-# scala.connection
-
-## scala.connection.events
+## scala.runtime.on()
 
 Can listen for when the event bus is online/offline. Triggers an asynchronous callback.
 
@@ -46,8 +44,8 @@ def on_online():
   print "Online!"
 def on_offline():
   print "Offline!"
-scala.connection.events.on("online", callback=on_online)
-scala.connection.events.on("offline", callback=on_offline)
+scala.runtime.on("online", callback=on_online)
+scala.runtime.on("offline", callback=on_offline)
 ```
 
 # scala.api
