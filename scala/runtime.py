@@ -16,8 +16,8 @@ socket.on('connected', _trigger_online)
 socket.on('disconnected', _trigger_offline)
 
 def start(
-    host='http://localhost',
-    port=9000,
+    host='http://api.exp.scala.com',
+    port=80,
     uuid=None,
     secret=None,
     username=None,
