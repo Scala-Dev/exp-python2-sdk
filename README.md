@@ -7,7 +7,7 @@ scala.runtime.start(
   username="joe@scala.com",
   password="joesmoe25",
   organization="scala")
-devices = scala.api.devices.search()
+devices = scala.api.get_devices()
 devices[0].document.name = "My Device"
 devices[0].save()
 scala.channels.organization.broadcast(name="I changed a device!")
@@ -35,9 +35,7 @@ scala.runtime.start(uuid="[uuid]", secret="[secret]")
 ## scala.runtime.stop()
 A socket connection is made to EXP that is non-blocking. To end the connection and to stop threads spawned by the SDK call ```scala.runtime.stop()```.
 
-# scala.connection
-
-## scala.connection.events
+## scala.runtime.on()
 
 Can listen for when the event bus is online/offline. Triggers an asynchronous callback.
 
@@ -46,25 +44,25 @@ def on_online():
   print "Online!"
 def on_offline():
   print "Offline!"
-scala.connection.events.on("online", callback=on_online)
-scala.connection.events.on("offline", callback=on_offline)
+scala.runtime.on("online", callback=on_online)
+scala.runtime.on("offline", callback=on_offline)
 ```
 
 # scala.api
 API abstraction layer.
 
-## Using a Resource Namespace
+## Example
 ```python
-devices = scala.api.devices.search(**params)  # Query for device objects (url params).
-device = scala.api.devices.get(uuid)  # Get device by UUID.
-device = scala.api.devices.create(document)  # Create a device from a dictionary
+devices = scala.api.get_devices(**params)  # Query for device objects (url params).
+device = scala.api.get_device(uuid)  # Get device by UUID.
+device = scala.api.create_device(document)  # Create a device from a dictionary
 ```
 Other available namespaces: experiences, zones, locations.
 
 ## API Resources
 Each resource object contains a "document" field which is a dictionary representation of the raw resource, along with "save" and "delete" methods.
 ```python
-device = scala.devices.create({ "field": value })
+device = scala.api.create_device({ "field": value })
 device.document["field"] = 123
 device.save()
 print device.document["field"]
