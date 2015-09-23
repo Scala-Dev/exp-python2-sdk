@@ -28,7 +28,7 @@ class Channel(object):
     now = time.time()
     for id, response in self._responses.iteritems():
       if now - response["time"] > 10:
-        responses.pop(id, None)
+        self._responses.pop(id, None)
     self._lock.release()
 
   def _on_response(self, message):

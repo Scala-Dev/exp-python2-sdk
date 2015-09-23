@@ -12,7 +12,7 @@ def get_devices(**params):
   return [Device(x, _new=False) for x in query.get("results", empty)]
 
 def get_device(uuid):
-  return Device(api_utils.get('/api/devices' + uuid), _new=False)
+  return Device(api_utils.get('/api/devices/' + uuid), _new=False)
 
 def create_device(document):
   return Device(document).save()
@@ -26,7 +26,7 @@ def get_experiences(**params):
   return [Experience(x, _new=False) for x in query.get("results", empty)]
 
 def get_experience(uuid):
-  return Experience(api_utils.get('/api/experiences' + uuid), _new=False)
+  return Experience(api_utils.get('/api/experiences/' + uuid), _new=False)
 
 def create_experience(document):
   return Experience(document).save()
@@ -40,7 +40,7 @@ def get_locations(**params):
   return [Location(x, _new=False) for x in query.get("results", empty)]
 
 def get_location(uuid):
-  return Location(api_utils.get('/api/locations' + uuid), _new=False)
+  return Location(api_utils.get('/api/locations/' + uuid), _new=False)
 
 def create_location(document):
   return Location(document).save()
@@ -54,7 +54,7 @@ def get_zones(**params):
   return [Zone(x, _new=False) for x in query.get("results", empty)]
 
 def get_zone(uuid):
-  return Zone(api_utils.get('/api/zones' + uuid), _new=False)
+  return Zone(api_utils.get('/api/zones/' + uuid), _new=False)
 
 def create_zone(document):
   return Zone(document).save()
