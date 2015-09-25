@@ -5,11 +5,10 @@ from . import config
 from . import credentials
 
 def generate_url(path):
-  url = config.get("host")
+  base = config.get("host")
   if config.get("port"):
-    url = url + ':' + str(config.get("port"))
-  url = url + urllib.quote(path)
-  return url
+    base = "{0}:{1}".format(base, config.get("port"))
+  return "{0}{1}".format(base, urllib.quote(path))
 
 def authenticate(username, password, organization):
   url = generate_url("/api/auth/login")

@@ -8,7 +8,9 @@ from scala.lib.models.content_node import ContentNode
 """ Content """
 
 def get_content_node(uuid):
-    return ContentNode(api_utils.get("/api/content/" + uuid + "/children"))
+    return ContentNode(
+        api_utils.get("/api/content/" + uuid + "/children"),
+        _isChildrenPopulated=True)
 
 
 """ Devices """
