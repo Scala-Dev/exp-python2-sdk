@@ -6,6 +6,8 @@ import scala
 scala.runtime.start(
   username="joe@scala.com",
   password="joesmoe25",
+  host="http://localhost",
+  port=9000,
   organization="scala")
 devices = scala.api.get_devices()
 devices[0].document.name = "My Device"
@@ -57,7 +59,7 @@ devices = scala.api.get_devices(**params)  # Query for device objects (url param
 device = scala.api.get_device(uuid)  # Get device by UUID.
 device = scala.api.create_device(document)  # Create a device from a dictionary
 ```
-Other available namespaces: experiences, zones, locations.
+Other available namespaces: experiences, zones, locations, content_node. Content nodes do not currently support queries or creation, only "get_content_node(uuid)".
 
 ## API Resources
 Each resource object contains a "document" field which is a dictionary representation of the raw resource, along with "save" and "delete" methods.
@@ -68,6 +70,8 @@ device.save()
 print device.document["field"]
 device.delete()
 ```
+
+The "content_node" resource has a ```get_children()``` method that returns the content node's children (a list of content node objects). Every content node object also has a ```get_url()``` method that returns a delivery url for the content.
 
 # scala.channels
 Parent namespace for interaction with the event bus. Available channels are:

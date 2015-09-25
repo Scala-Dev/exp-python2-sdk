@@ -2,6 +2,13 @@ from scala.lib import api_utils
 from scala.lib.models.device import Device
 from scala.lib.models.location import Location
 from scala.lib.models.experience import Experience
+from scala.lib.models.content_node import ContentNode
+
+
+""" Content """
+
+def get_content_node(uuid):
+    return ContentNode(api_utils.get("/api/content/" + uuid + "/children"))
 
 
 """ Devices """
