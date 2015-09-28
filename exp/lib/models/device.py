@@ -1,4 +1,4 @@
-from scala.lib import api_utils
+from .. import api_utils
 
 class Device(object):
 

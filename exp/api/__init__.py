@@ -1,8 +1,8 @@
-from scala.lib import api_utils
-from scala.lib.models.device import Device
-from scala.lib.models.location import Location
-from scala.lib.models.experience import Experience
-from scala.lib.models.content_node import ContentNode
+from .. lib import api_utils
+from .. lib.models.device import Device
+from .. lib.models.location import Location
+from .. lib.models.experience import Experience
+from .. lib.models.content_node import ContentNode
 
 
 """ Content """
