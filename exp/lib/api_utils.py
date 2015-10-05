@@ -45,6 +45,14 @@ def patch(path, payload=None, params=None):
   response.raise_for_status()
   return response.json()
 
+def put(path, payload=None, params=None):
+  url = generate_url(path)
+  headers = {}
+  headers["Authorization"] = "Bearer " + credentials.get_token()
+  response = requests.put(url, params=params, json=payload, headers=headers)
+  response.raise_for_status()
+  return response.json()
+
 def delete(path, payload=None, params=None):
   url = generate_url(path)
   headers = {}

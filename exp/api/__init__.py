@@ -3,6 +3,7 @@ from .. lib.models.device import Device
 from .. lib.models.location import Location
 from .. lib.models.experience import Experience
 from .. lib.models.content_node import ContentNode
+from .. lib.models.data import Data
 
 
 """ Content """
@@ -67,3 +68,17 @@ def get_zone(uuid):
 
 def create_zone(document):
   return Zone(document).save()
+
+
+""" Data """
+
+def get_data(key, group):
+    return Data(**api_utils.get('/api/data/' + group + '/' + key))
+
+def find_data(**params):
+    query = api_utils.get('/api/data', params=params)
+    return [Data(**x) for x in query.get('results', [])]
+
+def create_data(**params):
+    return Data(**params).save()
+    
