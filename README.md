@@ -71,7 +71,20 @@ print device.document["field"]
 device.delete()
 ```
 
+```python
+data = exp.api.get_data("key1", "group0")
+print data.value
+data.value = { "generic": 1111 }
+data.save()
+data.delete()
+
+data = exp.api.create_data(key="4", group="cats", { "name": "fluffy" })
+
+```
+
 The "content_node" resource has a ```get_children()``` method that returns the content node's children (a list of content node objects). Every content node object also has a ```get_url()``` method that returns a delivery url for the content.
+
+
 
 # exp.channels
 Parent namespace for interaction with the event bus. Available channels are:
