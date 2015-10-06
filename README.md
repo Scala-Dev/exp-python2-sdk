@@ -82,7 +82,7 @@ data = exp.api.create_data(key="4", group="cats", { "name": "fluffy" })
 
 ```
 
-The "content_node" resource has a ```get_children()``` method that returns the content node's children (a list of content node objects). Every content node object also has a ```get_url()``` method that returns a delivery url for the content.
+The "content_node" resource has a ```get_children()``` method that returns the content node's children (a list of content node objects). Every content node object also has a ```get_url()``` and ```get_variant_url(name)``` method that returns a delivery url for the content.
 
 
 
