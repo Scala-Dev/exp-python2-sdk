@@ -1,3 +1,5 @@
+import urllib
+
 from .. lib import api_utils
 from .. lib.models.device import Device
 from .. lib.models.location import Location
@@ -73,6 +75,8 @@ def create_zone(document):
 """ Data """
 
 def get_data(key, group):
+    key = urllib.quote(key, safe='')
+    group = urllib.quote(key, safe='')
     return Data(**api_utils.get('/api/data/' + group + '/' + key))
 
 def find_data(**params):

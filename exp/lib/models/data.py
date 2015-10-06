@@ -1,3 +1,5 @@
+import urllib
+
 from .. import api_utils
 
 class Data(object):
@@ -8,11 +10,15 @@ class Data(object):
     self.value = value
 
   def save(self):
-    api_utils.put("/api/data/{0}/{1}".format(self.group, self.key), payload=self.value)
+    key = urllib.quote(self.key, safe='')
+    group = urllib.quote(self.group, safe='')
+    api_utils.put("/api/data/{0}/{1}".format(group, key), payload=self.value)
     return self
 
   def delete(self):
-    api_utils.delete("/api/data/{0}/{1}".format(self.group, self.key))
+    key = urllib.quote(self.key, safe='')
+    group = urllib.quote(self.group, safe='')
+    api_utils.delete("/api/data/{0}/{1}".format(group, key))
     return self
 
 
