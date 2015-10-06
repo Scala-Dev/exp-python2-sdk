@@ -1,3 +1,5 @@
+import urllib
+
 from .. import api_utils
 
 class ContentNode(object):
@@ -8,6 +10,10 @@ class ContentNode(object):
 
   def get_url(self):
     return api_utils.generate_url("/api/delivery" + self.document.get("path"))
+
+  def get_variant_url(self, variant_name):
+    query = '?variant={0}'.format(variant_name)
+    return api_utils.generate_url('/api/delivery' + self.document.get('path')) + query
 
   def get_children(self):
     if not self._isChildrenPopulated:
