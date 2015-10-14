@@ -8,17 +8,16 @@ class Data(object):
     self.key = key
     self.group = group
     self.value = value
+    encoded_key = urllib.quote_plus(key)
+    encoded_group = urllib.quote_plus(group)
+    self._path = '/api/data/{0}/{1}'.format(encoded_group, encoded_key)
 
   def save(self):
-    key = urllib.quote_plus(self.key)
-    group = urllib.quote_plus(self.group)
-    api_utils.put("/api/data/{0}/{1}".format(group, key), payload=self.value)
+    api_utils.put(self._path, payload=self.value)
     return self
 
   def delete(self):
-    key = urllib.quote_plus(self.key)
-    group = urllib.quote_plus(self.group)
-    api_utils.delete("/api/data/{0}/{1}".format(group, key))
+    api_utils.delete(self._path)
     return self
 
 

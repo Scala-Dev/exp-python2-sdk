@@ -13,7 +13,7 @@ from .. lib.models.data import Data
 def get_content(uuid):
     return Content(
         api_utils.get("/api/content/" + uuid + "/children"),
-        _isChildrenPopulated=True)
+        _is_children_populated=True)
 
 
 """ Devices """
