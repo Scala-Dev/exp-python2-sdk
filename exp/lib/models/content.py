@@ -2,7 +2,7 @@ import urllib
 
 from .. import api_utils
 
-class ContentNode(object):
+class Content(object):
 
   def __init__(self, document, _isChildrenPopulated=False):
     self.document = document

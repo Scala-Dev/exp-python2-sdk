@@ -4,14 +4,14 @@ from .. lib import api_utils
 from .. lib.models.device import Device
 from .. lib.models.location import Location
 from .. lib.models.experience import Experience
-from .. lib.models.content_node import ContentNode
+from .. lib.models.content import Content
 from .. lib.models.data import Data
 
 
 """ Content """
 
 def get_content(uuid):
-    return ContentNode(
+    return Content(
         api_utils.get("/api/content/" + uuid + "/children"),
         _isChildrenPopulated=True)
 
@@ -56,20 +56,6 @@ def get_location(uuid):
 
 def create_location(document):
   return Location(document).save()
-
-
-""" Zones """
-
-def find_zones(**params):
-  query = api_utils.get('/api/zones', params=params)
-  empty = []
-  return [Zone(x, _new=False) for x in query.get("results", empty)]
-
-def get_zone(uuid):
-  return Zone(api_utils.get('/api/zones/' + uuid), _new=False)
-
-def create_zone(document):
-  return Zone(document).save()
 
 
 """ Data """
