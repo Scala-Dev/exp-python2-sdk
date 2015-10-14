@@ -10,7 +10,7 @@ from .. lib.models.data import Data
 
 """ Content """
 
-def get_content_node(uuid):
+def get_content(uuid):
     return ContentNode(
         api_utils.get("/api/content/" + uuid + "/children"),
         _isChildrenPopulated=True)
@@ -18,7 +18,7 @@ def get_content_node(uuid):
 
 """ Devices """
 
-def get_devices(**params):
+def find_devices(**params):
   query = api_utils.get('/api/devices', params=params)
   empty = []
   return [Device(x, _new=False) for x in query.get("results", empty)]
@@ -32,7 +32,7 @@ def create_device(document):
 
 """ Experiences """
 
-def get_experiences(**params):
+def find_experiences(**params):
   query = api_utils.get('/api/experiences', params=params)
   empty = []
   return [Experience(x, _new=False) for x in query.get("results", empty)]
@@ -46,7 +46,7 @@ def create_experience(document):
 
 """ Locations """
 
-def get_locations(**params):
+def find_locations(**params):
   query = api_utils.get('/api/locations', params=params)
   empty = []
   return [Location(x, _new=False) for x in query.get("results", empty)]
@@ -60,7 +60,7 @@ def create_location(document):
 
 """ Zones """
 
-def get_zones(**params):
+def find_zones(**params):
   query = api_utils.get('/api/zones', params=params)
   empty = []
   return [Zone(x, _new=False) for x in query.get("results", empty)]

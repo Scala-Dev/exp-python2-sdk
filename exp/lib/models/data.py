@@ -10,14 +10,14 @@ class Data(object):
     self.value = value
 
   def save(self):
-    key = urllib.quote(self.key, safe='')
-    group = urllib.quote(self.group, safe='')
+    key = urllib.quote_plus(self.key)
+    group = urllib.quote_plus(self.group)
     api_utils.put("/api/data/{0}/{1}".format(group, key), payload=self.value)
     return self
 
   def delete(self):
-    key = urllib.quote(self.key, safe='')
-    group = urllib.quote(self.group, safe='')
+    key = urllib.quote_plus(self.key)
+    group = urllib.quote_plus(self.group)
     api_utils.delete("/api/data/{0}/{1}".format(group, key))
     return self
 
