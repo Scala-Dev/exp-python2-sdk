@@ -55,11 +55,11 @@ API abstraction layer.
 
 ## Example
 ```python
-devices = exp.api.get_devices(**params)  # Query for device objects (url params).
+devices = exp.api.find_devices(**params)  # Query for device objects (url params).
 device = exp.api.get_device(uuid)  # Get device by UUID.
 device = exp.api.create_device(document)  # Create a device from a dictionary
 ```
-Other available namespaces: experiences, zones, locations, content_node. Content nodes do not currently support queries or creation, only "get_content_node(uuid)".
+Other available namespaces: experiences, locations, content, data. contents do not currently support queries or creation, only "get_content(uuid)".
 
 ## API Resources
 Each resource object contains a "document" field which is a dictionary representation of the raw resource, along with "save" and "delete" methods.
@@ -70,6 +70,7 @@ device.save()
 print device.document["field"]
 device.delete()
 ```
+
 
 ```python
 data = exp.api.get_data("key1", "group0")
@@ -82,8 +83,7 @@ data = exp.api.create_data(key="4", group="cats", { "name": "fluffy" })
 
 ```
 
-The "content_node" resource has a ```get_children()``` method that returns the content node's children (a list of content node objects). Every content node object also has a ```get_url()``` and ```get_variant_url(name)``` method that returns a delivery url for the content.
-
+The "content" resource has a ```get_children()``` method that returns the content's children (a list of content objects). Every content object also has a ```get_url()``` and ```get_variant_url(name)``` method that returns a delivery url for the content.
 
 
 # exp.channels
