@@ -1,21 +1,24 @@
+import urllib
+
 from .. lib import api_utils
 from .. lib.models.device import Device
 from .. lib.models.location import Location
 from .. lib.models.experience import Experience
-from .. lib.models.content_node import ContentNode
+from .. lib.models.content import Content
+from .. lib.models.data import Data
 
 
 """ Content """
 
-def get_content_node(uuid):
-    return ContentNode(
+def get_content(uuid):
+    return Content(
         api_utils.get("/api/content/" + uuid + "/children"),
-        _isChildrenPopulated=True)
+        _is_children_populated=True)
 
 
 """ Devices """
 
-def get_devices(**params):
+def find_devices(**params):
   query = api_utils.get('/api/devices', params=params)
   empty = []
   return [Device(x, _new=False) for x in query.get("results", empty)]
@@ -29,7 +32,7 @@ def create_device(document):
 
 """ Experiences """
 
-def get_experiences(**params):
+def find_experiences(**params):
   query = api_utils.get('/api/experiences', params=params)
   empty = []
   return [Experience(x, _new=False) for x in query.get("results", empty)]
@@ -43,7 +46,7 @@ def create_experience(document):
 
 """ Locations """
 
-def get_locations(**params):
+def find_locations(**params):
   query = api_utils.get('/api/locations', params=params)
   empty = []
   return [Location(x, _new=False) for x in query.get("results", empty)]
@@ -55,15 +58,17 @@ def create_location(document):
   return Location(document).save()
 
 
-""" Zones """
+""" Data """
 
-def get_zones(**params):
-  query = api_utils.get('/api/zones', params=params)
-  empty = []
-  return [Zone(x, _new=False) for x in query.get("results", empty)]
+def get_data(key, group):
+    key = urllib.quote(key, safe='')
+    group = urllib.quote(group, safe='')
+    return Data(**api_utils.get('/api/data/' + group + '/' + key))
 
-def get_zone(uuid):
-  return Zone(api_utils.get('/api/zones/' + uuid), _new=False)
+def find_data(**params):
+    query = api_utils.get('/api/data', params=params)
+    return [Data(**x) for x in query.get('results', [])]
 
-def create_zone(document):
-  return Zone(document).save()
+def create_data(**params):
+    return Data(**params).save()
+    
