@@ -11,11 +11,11 @@ class Content(object):
   def get_url(self):
     subtype = self.document['subtype']
     if subtype == 'scala:content:file':
-      path = urllib.quote_plus(self.document['path'])
-      return api_utils.generate_url('/api/delivery' + path)
+      path = urllib.quote(self.document['path'])
+      return api_utils.generate_url('/api/delivery') + path
     elif subtype == 'scala:content:app':
-      path = urllib.quote_plus(self.document['path'] + '/index.html')
-      return api_utils.generate_url('/api/delivery' + path)
+      path = urllib.quote(self.document['path'] + '/index.html')
+      return api_utils.generate_url('/api/delivery') + path
     elif subtype == 'scala:content:url':
       return self.document['url']
     raise NotImplementedError('Cannot get url for this subtype.')
@@ -36,6 +36,6 @@ class Content(object):
       path = '{0}{1}{2}'.format('/api/content/', self.document.get("uuid"), '/children')
       self.document = api_utils.get(path)
       self._is_children_populated = True
-    return [ContentNode(x) for x in self.document.get("children")]
+    return [Content(x) for x in self.document.get("children")]
       
 

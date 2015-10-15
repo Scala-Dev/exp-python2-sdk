@@ -62,7 +62,7 @@ def create_location(document):
 
 def get_data(key, group):
     key = urllib.quote(key, safe='')
-    group = urllib.quote(key, safe='')
+    group = urllib.quote(group, safe='')
     return Data(**api_utils.get('/api/data/' + group + '/' + key))
 
 def find_data(**params):
