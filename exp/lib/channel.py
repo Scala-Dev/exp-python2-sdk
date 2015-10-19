@@ -122,5 +122,8 @@ class Channel(object):
       self._listeners[name] = []
     self._listeners[name].append(callback)
 
+  def fling(self, uuid=None):
+    return self.broadcast(name='fling', payload={'uuid': uuid})
+
   def respond(self, name=None, callback=None):
     self._responders[name] = callback
