@@ -95,6 +95,13 @@ exp.channels.location
 exp.channels.organization
 ```
 
+## exp.channels.[channel].fling
+Fling content on a channel.
+```python
+uuid = '4abd....'
+exp.channels.organization.fling(uuid)
+```
+
 ## exp.channels.[channel].request
 Send a request on this channel.
 ```python
