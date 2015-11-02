@@ -6,6 +6,7 @@ from .. lib.models.location import Location
 from .. lib.models.experience import Experience
 from .. lib.models.content import Content
 from .. lib.models.data import Data
+from .. lib.models.thing import Thing
 
 
 """ Content """
@@ -28,6 +29,20 @@ def get_device(uuid):
 
 def create_device(document):
   return Device(document).save()
+
+
+""" Things """
+
+def find_things(**params):
+  query = api_utils.get('/api/things', params=params)
+  empty = []
+  return [Thing(x, _new=False) for x in query.get("results", empty)]
+
+def get_thing(uuid):
+  return Thing(api_utils.get('/api/things/' + uuid), _new=False)
+
+def create_thing(document):
+  return Thing(document).save()
 
 
 """ Experiences """
