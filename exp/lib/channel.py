@@ -16,7 +16,7 @@ class Channel(object):
 
   def __init__(self, name):
     self._name = name
-    self._listeners = []
+    self._listeners = {}
     self._responses = {}
     self._responders = {}
     self._lock = threading.Lock()
