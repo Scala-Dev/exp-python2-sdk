@@ -24,10 +24,14 @@ def start(
     password=None,
     organization=None,
     token=None,
+    networkUuid=None,
+    apiKey=None,
     **kwargs):
   config.set(host=host, port=port)
   if uuid and secret:
     credentials.set_device_credentials(uuid, secret)
+  elif networkUuid and apiKey:
+    credentials.set_network_credentials(networkUuid, apiKey)
   elif username and password and organization:
     credentials.set_user_credentials(username, password, organization)
   elif token:
