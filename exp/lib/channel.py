@@ -44,7 +44,7 @@ class Channel(object):
       return self._lock.release()
     for callback in callbacks:
       try:
-        callback(message.payload)
+        callback(message['payload'])
       except:
         pass
     self._lock.release()
@@ -55,7 +55,7 @@ class Channel(object):
       return self._lock.release()
     callback = self._responders.get(message["name"])
     try:
-      payload = callback(message.payload)
+      payload = callback(message['payload'])
     except:
       socket.send({
         "type": "response",
