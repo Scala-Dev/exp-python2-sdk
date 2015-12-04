@@ -7,6 +7,7 @@ from .. lib.models.experience import Experience
 from .. lib.models.content import Content
 from .. lib.models.data import Data
 from .. lib.models.thing import Thing
+from .. lib.models.feed import Feed
 
 
 """ Content """
@@ -87,3 +88,16 @@ def find_data(**params):
 def create_data(**params):
     return Data(**params).save()
     
+
+""" Feeds """
+
+def find_feeds(**params):
+  query = api_utils.get('/api/connectors/feeds', params=params)
+  empty = []
+  return [Feed(x, _new=False) for x in query.get("results", empty)]
+
+def get_feed(uuid):
+  return Feed(api_utils.get('/api/connectors/feeds/' + uuid), _new=False)
+
+def create_feed(document):
+  return Feed(document).save()
