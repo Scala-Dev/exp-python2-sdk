@@ -1,6 +1,9 @@
 import time
 import requests
-import jwt
+import json
+import hmac
+from hashlib import sha256
+from base64 import urlsafe_b64encode
 
 
 _vars = {}
@@ -23,6 +26,14 @@ def _reset():
   _vars["time"] = 0
   _vars["networkUuid"] = None
   _vars["apiKey"] = None
+
+def _jwtHS256encode(payload, secret):
+  alg = urlsafe_b64encode('{"alg":"HS256","typ":"JWT"}')
+  if not isinstance(payload, basestring):
+    payload = json.dumps(payload, separators=(',', ':'))
+  payload = urlsafe_b64encode(payload.encode("utf-8")).rstrip('=')
+  sign = urlsafe_b64encode(hmac.new(secret.encode("utf-8"), '.'.join([alg, payload]), sha256).digest()).rstrip('=')
+  return '.'.join([alg, payload, sign])
 
 def set_user_credentials(username, password, organization):
   _reset()
@@ -69,12 +80,12 @@ def _generate_user_token():
 def _generate_device_token():
   payload = {}
   payload["uuid"] = cls._uuid
-  _vars["token"] = jwt.encode(payload, _vars["secret"], algorithm="HS256")
+  _vars["token"] = _jwtHS256encode(payload, _vars["secret"])
   _vars["time"] = time.time()
 
 def _generate_network_token():
   payload = {}
   payload["networkUuid"] = _vars["networkUuid"]
-  _vars["token"] = jwt.encode(payload, _vars["apiKey"], algorithm="HS256")
+  _vars["token"] = _jwtHS256encode(payload, _vars["apiKey"])
   _vars["time"] = time.time()
       
