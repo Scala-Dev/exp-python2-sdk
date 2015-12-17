@@ -32,6 +32,8 @@ exp.runtime.start(
   organization="exp")
 # Authenticate with device uuid and secret.
 exp.runtime.start(uuid="[uuid]", secret="[secret]")
+# Authenticate with consumer app uuid and api key.
+exp.runtime.start(uuid="[uuid]", apiKey="[apiKey]")
 ```
 
 ## exp.runtime.stop()
@@ -59,7 +61,7 @@ devices = exp.api.find_devices(**params)  # Query for device objects (url params
 device = exp.api.get_device(uuid)  # Get device by UUID.
 device = exp.api.create_device(document)  # Create a device from a dictionary
 ```
-Other available namespaces: experiences, locations, content, data. contents do not currently support queries or creation, only "get_content(uuid)".
+Other available namespaces: experiences, locations, content, data. content does not currently support creation, only "get_content(uuid) and find_content(params)".
 
 ## API Resources
 Each resource object contains a "document" field which is a dictionary representation of the raw resource, along with "save" and "delete" methods.
