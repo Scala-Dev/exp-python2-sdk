@@ -87,6 +87,8 @@ data = exp.api.create_data(key="4", group="cats", { "name": "fluffy" })
 
 The "content" resource has a ```get_children()``` method that returns the content's children (a list of content objects). Every content object also has a ```get_url()``` and ```get_variant_url(name)``` method that returns a delivery url for the content.
 
+The "feed" resource has a ```get_data()``` method that returns a the feed's decoded JSON document.
+
 
 # exp.channels
 Parent namespace for interaction with the event bus. Available channels are:
