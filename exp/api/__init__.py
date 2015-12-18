@@ -13,9 +13,14 @@ from .. lib.models.feed import Feed
 """ Content """
 
 def get_content(uuid):
-    return Content(
-        api_utils.get("/api/content/" + uuid + "/children"),
-        _is_children_populated=True)
+  return Content(
+    api_utils.get("/api/content/" + uuid + "/children"),
+    _is_children_populated=True)
+
+def find_content(**params):
+  query = api_utils.get('/api/content', params=params)
+  empty = []
+  return [Content(x, _is_children_populated=False) for x in query.get("results", empty)]
 
 
 """ Devices """

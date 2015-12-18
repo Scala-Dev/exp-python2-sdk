@@ -13,7 +13,6 @@ _vars["username"] = None
 _vars["password"] = None
 _vars["token"] = None
 _vars["time"] = 0
-_vars["networkUuid"] = None
 _vars["apiKey"] = None
 
 def _reset():
@@ -24,7 +23,6 @@ def _reset():
   _vars["organization"] = None
   _vars["token"] = None
   _vars["time"] = 0
-  _vars["networkUuid"] = None
   _vars["apiKey"] = None
 
 def _jwtHS256encode(payload, secret):
@@ -46,9 +44,9 @@ def set_device_credentials(uuid, secret):
   _vars["uuid"] = uuid
   _vars["secret"] = secret
 
-def set_network_credentials(uuid, apiKey):
+def set_consumer_app_credentials(uuid, apiKey):
   _reset()
-  _vars["networkUuid"] = uuid
+  _vars["consumerAppUuid"] = uuid
   _vars["apiKey"] = apiKey
 
 def set_token(token):
@@ -66,8 +64,8 @@ def _generate_token():
     _generate_device_token()
   elif _vars["username"] and _vars["password"]:
     _generate_user_token()
-  elif _vars["networkUuid"] and _vars["apiKey"]:
-    _generate_network_token()
+  elif _vars["uuid"] and _vars["apiKey"]:
+    _generate_consumer_app_token()
   else:
     _vars["token"] = ''
     _vars["time"] = 0
@@ -79,13 +77,13 @@ def _generate_user_token():
 
 def _generate_device_token():
   payload = {}
-  payload["uuid"] = cls._uuid
+  payload["uuid"] = _vars["uuid"]
   _vars["token"] = _jwtHS256encode(payload, _vars["secret"])
   _vars["time"] = time.time()
 
-def _generate_network_token():
+def _generate_consumer_app_token():
   payload = {}
-  payload["networkUuid"] = _vars["networkUuid"]
+  payload["uuid"] = _vars["uuid"]
   _vars["token"] = _jwtHS256encode(payload, _vars["apiKey"])
   _vars["time"] = time.time()
       
