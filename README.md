@@ -2,42 +2,44 @@
 The SDK is an importable Python module that facilitates API and event bus actions on EXP.
 
 ```python
-import scala
-scala.runtime.start(
-  username="joe@scala.com",
+import exp
+exp.runtime.start(
+  username="joe@exp.com",
   password="joesmoe25",
-  organization="scala")
-devices = scala.api.devices.search()
+  host="http://localhost",
+  port=9000,
+  organization="exp")
+devices = exp.api.get_devices()
 devices[0].document.name = "My Device"
 devices[0].save()
-scala.channels.organization.broadcast(name="I changed a device!")
-response = scala.channels.experience.request(name="sendMeMoney", target={ 
+exp.channels.organization.broadcast(name="I changed a device!")
+response = exp.channels.experience.request(name="sendMeMoney", target={ 
    "device": devices[0].document["uuid"] })
 print response
-scala.runtime.stop()
+exp.runtime.stop()
 ```
 
-# scala.runtime
+# exp.runtime
 
-## scala.runtime.start()
-The SDK must be initialized by calling ```scala.runtime.start()``` and passing in configuration options. This starts the event bus and automatically authenticates API calls. The start command will block until a connection is first established. 
+## exp.runtime.start()
+The SDK must be initialized by calling ```exp.runtime.start()``` and passing in configuration options. This starts the event bus and automatically authenticates API calls. The start command will block until a connection is first established. 
 
 ```python
 # Authenticate with username and password.
-scala.runtime.start(
-  username="joe@scala.com",
+exp.runtime.start(
+  username="joe@exp.com",
   password="joesmoe25",
-  organization="scala")
+  organization="exp")
 # Authenticate with device uuid and secret.
-scala.runtime.start(uuid="[uuid]", secret="[secret]")
+exp.runtime.start(uuid="[uuid]", secret="[secret]")
+# Authenticate with consumer app uuid and api key.
+exp.runtime.start(uuid="[uuid]", apiKey="[apiKey]")
 ```
 
-## scala.runtime.stop()
-A socket connection is made to EXP that is non-blocking. To end the connection and to stop threads spawned by the SDK call ```scala.runtime.stop()```.
+## exp.runtime.stop()
+A socket connection is made to EXP that is non-blocking. To end the connection and to stop threads spawned by the SDK call ```exp.runtime.stop()```.
 
-# scala.connection
-
-## scala.connection.events
+## exp.runtime.on()
 
 Can listen for when the event bus is online/offline. Triggers an asynchronous callback.
 
@@ -46,68 +48,92 @@ def on_online():
   print "Online!"
 def on_offline():
   print "Offline!"
-scala.connection.events.on("online", callback=on_online)
-scala.connection.events.on("offline", callback=on_offline)
+exp.runtime.on("online", callback=on_online)
+exp.runtime.on("offline", callback=on_offline)
 ```
 
-# scala.api
+# exp.api
 API abstraction layer.
 
-## Using a Resource Namespace
+## Example
 ```python
-devices = scala.api.devices.search(**params)  # Query for device objects (url params).
-device = scala.api.devices.get(uuid)  # Get device by UUID.
-device = scala.api.devices.create(document)  # Create a device from a dictionary
+devices = exp.api.find_devices(**params)  # Query for device objects (url params).
+device = exp.api.get_device(uuid)  # Get device by UUID.
+device = exp.api.create_device(document)  # Create a device from a dictionary
 ```
-Other available namespaces: experiences, zones, locations.
+Other available namespaces: experiences, locations, content, data. content does not currently support creation, only "get_content(uuid) and find_content(params)".
 
 ## API Resources
 Each resource object contains a "document" field which is a dictionary representation of the raw resource, along with "save" and "delete" methods.
 ```python
-device = scala.devices.create({ "field": value })
+device = exp.api.create_device({ "field": value })
 device.document["field"] = 123
 device.save()
 print device.document["field"]
 device.delete()
 ```
 
-# scala.channels
-Parent namespace for interaction with the event bus. Available channels are:
+
 ```python
-scala.channels.system  # Calls to and from the system
-scala.channels.experience
-scala.channels.location
-scala.channels.organization
+data = exp.api.get_data("key1", "group0")
+print data.value
+data.value = { "generic": 1111 }
+data.save()
+data.delete()
+
+data = exp.api.create_data(key="4", group="cats", { "name": "fluffy" })
+
 ```
 
-## scala.channels.[channel].request
+The "content" resource has a ```get_children()``` method that returns the content's children (a list of content objects). Every content object also has a ```get_url()``` and ```get_variant_url(name)``` method that returns a delivery url for the content.
+
+The "feed" resource has a ```get_data()``` method that returns a the feed's decoded JSON document.
+
+
+# exp.channels
+Parent namespace for interaction with the event bus. Available channels are:
+```python
+exp.channels.system  # Calls to and from the system
+exp.channels.experience
+exp.channels.location
+exp.channels.organization
+```
+
+## exp.channels.[channel].fling
+Fling content on a channel.
+```python
+uuid = '4abd....'
+exp.channels.organization.fling(uuid)
+```
+
+## exp.channels.[channel].request
 Send a request on this channel.
 ```python
-response = scala.channels.location.request(
+response = exp.channels.location.request(
   name="getSomething", 
   target= { "device" : "[uuid]"}, payload= { "info": 123 })
 ```
 
-## scala.channels.[channel].respond
+## exp.channels.[channel].respond
 Attach a callback to handle requests to this device. Return value of callback is response content. Must be JSON serializable.
 ```python
 def get_something(payload=None):
   return "Something"
-scala.channels.location.respond(name="getSomething", callback=get_something_callback)
+exp.channels.location.respond(name="getSomething", callback=get_something_callback)
 ```
 
-## scala.channels.[channel].broadcast
+## exp.channels.[channel].broadcast
 Sends a broadcast message on the channel.
 ```python
-scala.channels.experience.broadcast(name="Hi!", payload={})
+exp.channels.experience.broadcast(name="Hi!", payload={})
 ```
 
-## scala.channels.[channel].listen
+## exp.channels.[channel].listen
 Listens for broadcasts on the channel. Non-blocking, callback is spawned in new thread.
 ```python
 def my_method(payload=None):
   print payload
-scala.channels.experience.listen(name="Hi!", callback=my_method)
+exp.channels.experience.listen(name="Hi!", callback=my_method)
 ```
 
 

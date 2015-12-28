@@ -16,7 +16,7 @@ class Channel(object):
 
   def __init__(self, name):
     self._name = name
-    self._listeners = []
+    self._listeners = {}
     self._responses = {}
     self._responders = {}
     self._lock = threading.Lock()
@@ -28,7 +28,7 @@ class Channel(object):
     now = time.time()
     for id, response in self._responses.iteritems():
       if now - response["time"] > 10:
-        responses.pop(id, None)
+        self._responses.pop(id, None)
     self._lock.release()
 
   def _on_response(self, message):
@@ -44,7 +44,7 @@ class Channel(object):
       return self._lock.release()
     for callback in callbacks:
       try:
-        callback(message.payload)
+        callback(message['payload'])
       except:
         pass
     self._lock.release()
@@ -55,7 +55,7 @@ class Channel(object):
       return self._lock.release()
     callback = self._responders.get(message["name"])
     try:
-      payload = callback(message.payload)
+      payload = callback(message['payload'])
     except:
       socket.send({
         "type": "response",
@@ -121,6 +121,9 @@ class Channel(object):
     if not self._listeners.get(name):
       self._listeners[name] = []
     self._listeners[name].append(callback)
+
+  def fling(self, uuid=None):
+    return self.broadcast(name='fling', payload={'uuid': uuid})
 
   def respond(self, name=None, callback=None):
     self._responders[name] = callback

@@ -1,17 +1,17 @@
 import requests
-
+import urllib
+  
 from . import config
 from . import credentials
 
-def _generate_url(path):
-  url = config.get("host")
+def generate_url(path):
+  base = config.get("host")
   if config.get("port"):
-    url = url + ':' + str(config.get("port"))
-  url = url + path
-  return url
+    base = "{0}:{1}".format(base, config.get("port"))
+  return "{0}{1}".format(base, urllib.quote(path))
 
 def authenticate(username, password, organization):
-  url = _generate_url("/api/auth/login")
+  url = generate_url("/api/auth/login")
   payload = {}
   payload["username"] = username
   payload["password"] = password
@@ -22,7 +22,7 @@ def authenticate(username, password, organization):
   return body["token"]
 
 def get(path, params=None):
-  url = _generate_url(path)
+  url = generate_url(path)
   headers = {}
   headers["Authorization"] = "Bearer " + credentials.get_token()
   response = requests.get(url, params=params, headers=headers)
@@ -30,7 +30,7 @@ def get(path, params=None):
   return response.json()
 
 def post(path, payload=None, params=None):
-  url = _generate_url(path)
+  url = generate_url(path)
   headers = {}
   headers["Authorization"] = "Bearer " + credentials.get_token()
   response = requests.post(url, params=params, json=payload, headers=headers)
@@ -38,15 +38,23 @@ def post(path, payload=None, params=None):
   return response.json()
 
 def patch(path, payload=None, params=None):
-  url = _generate_url(path)
+  url = generate_url(path)
   headers = {}
   headers["Authorization"] = "Bearer " + credentials.get_token()
   response = requests.patch(url, params=params, json=payload, headers=headers)
   response.raise_for_status()
   return response.json()
 
+def put(path, payload=None, params=None):
+  url = generate_url(path)
+  headers = {}
+  headers["Authorization"] = "Bearer " + credentials.get_token()
+  response = requests.put(url, params=params, json=payload, headers=headers)
+  response.raise_for_status()
+  return response.json()
+
 def delete(path, payload=None, params=None):
-  url = _generate_url(path)
+  url = generate_url(path)
   headers = {}
   headers["Authorization"] = "Bearer " + credentials.get_token()
   response = requests.delete(url, params=params, json=payload, headers=headers)
