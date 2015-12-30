@@ -46,7 +46,7 @@ def set_device_credentials(uuid, secret):
 
 def set_consumer_app_credentials(uuid, apiKey):
   _reset()
-  _vars["consumerAppUuid"] = uuid
+  _vars["uuid"] = uuid
   _vars["apiKey"] = apiKey
 
 def set_token(token):
@@ -77,13 +77,13 @@ def _generate_user_token():
 
 def _generate_device_token():
   payload = {}
-  payload["uuid"] = _vars["uuid"]
+  payload["deviceUuid"] = _vars["uuid"]
   _vars["token"] = _jwtHS256encode(payload, _vars["secret"])
   _vars["time"] = time.time()
 
 def _generate_consumer_app_token():
   payload = {}
-  payload["uuid"] = _vars["uuid"]
+  payload["consumerAppUuid"] = _vars["uuid"]
   _vars["token"] = _jwtHS256encode(payload, _vars["apiKey"])
   _vars["time"] = time.time()
-      
+
