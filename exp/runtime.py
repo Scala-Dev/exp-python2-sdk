@@ -28,6 +28,7 @@ def start(
     networkUuid=None,
     consumerAppUuid=None,
     apiKey=None,
+    timeOut=None,
     **kwargs):
 
   if port is None:
@@ -36,7 +37,7 @@ def start(
     else:
       port = 443
 
-  config.set(host=host, port=port)
+  config.set(host=host, port=port, timeout=timeout)
 
   if uuid and secret:
     credentials.set_device_credentials(uuid, secret)
