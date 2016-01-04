@@ -5,11 +5,7 @@ from . import config
 from . import credentials
 
 def timeout():
-  if config.get("timeout"):
-    timeout=config.get("timeout")
-  else:
-     timeout=10
-  return timeout
+  return config.get('timeout') or 10
 
 def generate_url(path):
   base = config.get("host")
