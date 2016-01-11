@@ -28,6 +28,7 @@ def start(
     networkUuid=None,
     consumerAppUuid=None,
     apiKey=None,
+    enableEvents=True,
     **kwargs):
 
   if port is None:
@@ -53,7 +54,8 @@ def start(
   elif token:
     credentials.set_token(token)
 
-  socket.start(host, port, credentials.get_token())
+  if enableEvents:
+    socket.start(host, port, credentials.get_token())
 
   
 def stop():
