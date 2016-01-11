@@ -11,7 +11,7 @@ def _trigger_online():
 
 def _trigger_offline():
   _events.trigger('offline')
-  
+
 socket.on('connected', _trigger_online)
 socket.on('disconnected', _trigger_offline)
 
@@ -28,6 +28,7 @@ def start(
     networkUuid=None,
     consumerAppUuid=None,
     apiKey=None,
+    timeout=None,
     enableEvents=True,
     **kwargs):
 
@@ -37,7 +38,7 @@ def start(
     else:
       port = 443
 
-  config.set(host=host, port=port)
+  config.set(host=host, port=port, timeout=timeout)
 
   if uuid and secret:
     credentials.set_device_credentials(uuid, secret)
@@ -57,9 +58,9 @@ def start(
   if enableEvents:
     socket.start(host, port, credentials.get_token())
 
-  
+
 def stop():
   socket.stop()
 
 
-  
+
