@@ -11,7 +11,7 @@ def _trigger_online():
 
 def _trigger_offline():
   _events.trigger('offline')
-  
+
 socket.on('connected', _trigger_online)
 socket.on('disconnected', _trigger_offline)
 
@@ -29,6 +29,7 @@ def start(
     consumerAppUuid=None,
     apiKey=None,
     timeout=None,
+    enableEvents=True,
     **kwargs):
 
   if port is None:
@@ -54,11 +55,12 @@ def start(
   elif token:
     credentials.set_token(token)
 
-  socket.start(host, port, credentials.get_token())
+  if enableEvents:
+    socket.start(host, port, credentials.get_token())
 
-  
+
 def stop():
   socket.stop()
 
 
-  
+
