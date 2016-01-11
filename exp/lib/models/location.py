@@ -18,5 +18,5 @@ class Location(object):
     api_utils.delete("/api/locations/" + self.document["uuid"])
     return self
 
-
-  
+  def get_layout_url(self):
+    return api_utils.generate_url('/api/locations/' + self.document['uuid'] + '/layout')
