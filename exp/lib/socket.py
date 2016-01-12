@@ -54,7 +54,7 @@ def _connect(host, port, token):
   while time.time() - start < 5:
     if not _vars["io"]:
       try:
-        _vars["io"] = SocketIO(host, port, params={ "token": token }, Namespace=_Namespace)
+        _vars["io"] = SocketIO(host, port, params={ "token": token }, Namespace=_Namespace, hurry_interval_in_seconds=10)
       except:
         _vars["io"] = None
         time.sleep(1)
