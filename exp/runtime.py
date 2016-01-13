@@ -2,6 +2,8 @@ from lib import socket
 from lib import event_node
 from lib import credentials
 from lib import config
+import signal
+import sys
 
 _events = event_node.EventNode()
 on = _events.on
@@ -62,5 +64,10 @@ def start(
 def stop():
   socket.stop()
 
+def signal_handler(signal, frame):
+  socket.stop()
+  sys.exit(0)
+
+signal.signal(signal.SIGINT, signal_handler)
 
 

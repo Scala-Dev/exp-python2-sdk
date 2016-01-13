@@ -11,7 +11,7 @@ class Feed(object):
       self.document = api_utils.post('/api/connectors/feeds', payload=self.document)
       self._new = False
     else:
-      self.document = api_utils.patch('/api/connectors/feeds' + self.document['uuid'], payload=self.document)
+      self.document = api_utils.patch('/api/connectors/feeds/' + self.document['uuid'], payload=self.document)
     return self
 
   def get_data (self):
