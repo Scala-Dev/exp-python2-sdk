@@ -12,7 +12,7 @@ class Error(Exception):
 class Channel(object):
 
   Timeout = Timeout
-  Error = Error  
+  Error = Error
 
   def __init__(self, name):
     self._name = name

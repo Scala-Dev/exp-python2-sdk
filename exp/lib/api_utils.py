@@ -27,7 +27,7 @@ def authenticate(username, password, organization):
 def get(path, params=None):
   url = generate_url(path)
   headers = {}
-  timeout = get_timeout()  
+  timeout = get_timeout()
   headers["Authorization"] = "Bearer " + credentials.get_token()
   response = requests.get(url, timeout=timeout, params=params, headers=headers)
   response.raise_for_status()
