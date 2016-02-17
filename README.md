@@ -3,7 +3,7 @@ The SDK is an importable Python module that facilitates API and event bus action
 
 ```python
 import exp
-exp.runtime.start(
+exp.start(
   username="joe@exp.com",
   password="joesmoe25",
   host="http://localhost",
@@ -21,19 +21,19 @@ exp.runtime.stop()
 
 # exp.runtime
 
-## exp.runtime.start()
-The SDK must be initialized by calling ```exp.runtime.start()``` and passing in configuration options. This starts the event bus and automatically authenticates API calls. The start command will block until a connection is first established. 
+## exp.start()
+The SDK must be initialized by calling ```exp.start()``` and passing in configuration options. This starts the event bus and automatically authenticates API calls. The start command will block until a connection is first established. 
 
 ```python
 # Authenticate with username and password.
-exp.runtime.start(
+exp.start(
   username="joe@exp.com",
   password="joesmoe25",
   organization="exp")
 # Authenticate with device uuid and secret.
-exp.runtime.start(uuid="[uuid]", secret="[secret]")
+exp.start(uuid="[uuid]", secret="[secret]")
 # Authenticate with consumer app uuid and api key.
-exp.runtime.start(uuid="[uuid]", apiKey="[apiKey]")
+exp.start(uuid="[uuid]", apiKey="[apiKey]")
 ```
 
 ## exp.runtime.stop()
@@ -90,54 +90,74 @@ The "content" resource has a ```get_children()``` method that returns the conten
 The "feed" resource has a ```get_data()``` method that returns a the feed's decoded JSON document.
 
 
-# exp.channels
-Parent namespace for interaction with the event bus. Available channels are:
+
+
+
+
+## The EXP Network
+
+The EXP network facilitates real time communication between entities connected to EXP. A user or device can broadcast a JSON serializable payload to users and devices in your organization, and listeners to those broadcasts can respond to the broadcasters.
+
+### Channels
+
+All messages on the EXP network are sent over a channel. Channels have a name, and two flags: ```system``` and ```consumer```.
+
 ```python
-exp.channels.system  # Calls to and from the system
-exp.channels.experience
-exp.channels.location
-exp.channels.organization
+channel = exp.get_channel("my_channel", system=False, consumer=False)
 ```
 
-## exp.channels.[channel].fling
-Fling content on a channel.
-```python
-uuid = '4abd....'
-exp.channels.organization.fling(uuid)
-```
+Use ```system=True``` to get a system channel. You cannot send messages on a system channels but can listen for system notifications, such as updates to API resources.
 
-## exp.channels.[channel].request
-Send a request on this channel.
-```python
-response = exp.channels.location.request(
-  name="getSomething", 
-  target= { "device" : "[uuid]"}, payload= { "info": 123 })
-```
+Use ```consumer=True``` to get a consumer channel. Consumer devices can only listen or broadcast on consumer channels. When ```consumer=False``` you will not receive consumer device broadcasts and consumer devices will not be able to hear your broadcasts.
 
-## exp.channels.[channel].respond
-Attach a callback to handle requests to this device. Return value of callback is response content. Must be JSON serializable.
-```python
-def get_something(payload=None):
-  return "Something"
-exp.channels.location.respond(name="getSomething", callback=get_something_callback)
-```
+Both ```system``` and ```consumer``` default to ```False``` except for consumer devices, where ```consumer``` will always be ```True``` for all channels.
 
-## exp.channels.[channel].broadcast
-Sends a broadcast message on the channel.
-```python
-exp.channels.experience.broadcast(name="Hi!", payload={})
-```
 
-## exp.channels.[channel].listen
-Listens for broadcasts on the channel. Non-blocking, callback is spawned in new thread.
+### Broadcasting
+
+Use the broadcast method of a channel object to send a named message with a JSON serializable payload to other entities on the EXP network. You can optionally include a timeout to wait for responses to the broadcast. The broadcast will block for approximately the given timeout and return a list of response payloads. Each response payload can any JSON serializable type.
+
 ```python
-def my_method(payload=None):
-  print payload
-exp.channels.experience.listen(name="Hi!", callback=my_method)
+channel = exp.get_channel("my_channel")
+responses = channel.broadcast(name='Hello!', timeout=5, payload=[1, 2, 3])
+[print response for response in responses]
 ```
 
 
+### Listening
 
+To listen for broadcasts, call the listen method of a channel object. 
+
+```python
+channel = exp.get_channel("my_channel")
+listener = channel.listen("my_event")
+
+while True:
+  broadcast = listener.wait(5)
+  if broadcast: 
+    print "Message received!"
+    print broadcast.payload
+```
+
+
+
+
+### Responding
+
+To respond to broadcast, call the respond method on the broadcast object, optionally passing in a JSON serializable response payload.
+
+```python
+
+channel = exp.get_channel("my_channel")
+listener = channel.listen(name="my_custom_event")
+
+while True:
+  broadcast = listener.wait(5)
+  if broadcast and broadcast.payload is "hello!":
+    print "Responding to broadcast."
+    broadcast.respond("Nice to meet you!")
+
+```
 
 
 
