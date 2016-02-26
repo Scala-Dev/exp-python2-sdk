@@ -1,73 +1,155 @@
-from lib import socket
-from lib import event_node
-from lib import credentials
-from lib import config
-import signal
+
+
+
 import sys
+import sys
+import time
+import json
+import hmac
+import base64
+import hashlib
+import requests
+import threading
+from . import network
 
-_events = event_node.EventNode()
-on = _events.on
 
-def _trigger_online():
-  _events.trigger('online')
+class RuntimeException (Exception):
+    pass
 
-def _trigger_offline():
-  _events.trigger('offline')
+class Runtime (object):
 
-socket.on('connected', _trigger_online)
-socket.on('disconnected', _trigger_offline)
+  def __init__ (self):
+    self.is_started = False
+    self.auth = None
+    self.semaphore = threading.Semaphore()
+    self.exception = None
 
-def start(
-    host='https://api.exp.scala.com',
-    port=None,
-    uuid=None,
-    deviceUuid=None,
-    secret=None,
-    username=None,
-    password=None,
-    organization=None,
-    token=None,
-    networkUuid=None,
-    consumerAppUuid=None,
-    apiKey=None,
-    timeout=None,
-    enableEvents=True,
-    **kwargs):
+  @property
+  def RuntimeException ():
+    return RuntimeException
 
-  if port is None:
-    if host.startswith('http:'):
-      port = 80
+  def start (self, enable_events=True, host='https://api.goexp.io', **kwargs):
+    if self.is_started:
+      raise RuntimeException('Runtime already started.')
+    self.is_started = True
+
+    self.options = kwargs
+    self.options['host'] = host
+    self.options['enable_events'] = enable_events
+
+    if not self.options.get('port'):
+      if self.options.get('host').startswith('http:'):
+        self.options['port'] = 80
+      else:
+        self.options['port'] = 443
+
+    thread = threading.Thread(target=lambda: self.fork())
+    thread.daemon = True
+    thread.start()
+
+    if self.exception:
+      raise self.exception
+
+    self.semaphore.acquire()
+
+    if self.exception:
+      raise self.exception
+
+
+  def fork (self):
+    try:
+      self.validate()
+      self.login()
+    except Exception as exception:
+      self.exception = exception
+    finally:
+      self.semaphore.release()
+
+
+  def validate (self):
+    if self.options.get('type') is 'user' or self.options.get('username') or self.options.get('password') or self.options.get('organization'):
+      self.options['type'] = 'user'
+      if not self.options.get('username'):
+        self.abort(RuntimeException('Please specify the username.'))
+      if not self.options.get('password'):
+        raise RuntimeException('Please specify the password.')
+      if not self.options.get('organization'): raise RuntimeException('Please specify the organization.')
+    elif self.options.get('type') is 'device' or self.options.get('secret'):
+      self.options['type'] = 'device'
+      if not self.options.get('uuid') and not self.options.get('allow_pairing'): raise RuntimeException('Please specify the device uuid.')
+      if not self.options.get('secret') and not self.options.get('allow_pairing'): raise RuntimeException('Please specify the device secret.')
+    elif self.options.get('type') is 'consumer_app' or self.options.get('api_key'):
+      self.options['type'] = 'consumer_app'
+      if not self.options.get('uuid'): raise RuntimeException('Please specify the consumer app uuid.')
+      if not self.options.get('api_key'): raise RuntimeException('Please specify the consumer app api key.')
     else:
-      port = 443
-
-  config.set(host=host, port=port, timeout=timeout)
-
-  if uuid and secret:
-    credentials.set_device_credentials(uuid, secret)
-  elif deviceUuid and secret:
-    credentials.set_device_credentials(deviceUuid, secret)
-  elif uuid and apiKey:
-    credentials.set_consumer_app_credentials(uuid, apiKey)
-  elif networkUuid and apiKey:
-    credentials.set_consumer_app_credentials(networkUuid, apiKey)
-  elif consumerAppUuid and apiKey:
-    credentials.set_consumer_app_credentials(consumerAppUuid, apiKey)
-  elif username and password and organization:
-    credentials.set_user_credentials(username, password, organization)
-  elif token:
-    credentials.set_token(token)
-
-  if enableEvents:
-    socket.start(host, port, credentials.get_token())
+      raise RuntimeException('Please specify authentication type.')
 
 
-def stop():
-  socket.stop()
+  def login (self):
+    print 'Logging in to exp.'
+    payload = {}
+    if self.options.get('type') is 'user':
+      payload['type'] = 'user'
+      payload['username'] = self.options.get('username')
+      payload['password'] = self.options.get('password')
+      payload['organization'] = self.options.get('organization')
+    elif self.options.get('type') is 'device':
+      token_payload = {}
+      token_payload['type'] = 'device'
+      token_payload['uuid'] = self.options.get('uuid', '_')
+      token_payload['allowPairing'] = self.options.get('allow_paiing')
+      payload['token'] = self.generate_jwt(token_payload, self.options.get('secret', '_'))
+    elif self.options.get('type') is 'consumer_app':
+      token_payload = {}
+      token_payload['type'] = 'consumerApp'
+      token_payload['uuid'] = self.options.get('uuid', '_')
+      payload['token'] = self.generate_jwt(token_payload, self.options.get('apiKey', '_'))
+    response = requests.request('POST', self.options.get('host') + '/api/auth/login', json=payload)
+    if response.status_code is 401:
+      raise RuntimeException('Invalid credentials.')
+    elif response.status_code is 200:
+      print 'GOT CREDS'
+      self.auth = response.json()
+      # Release the semaphore
+      time.sleep((self.auth['expiration'] - int(time.time())) / 2.0 / 1000.0)
+      self.refresh()
+    else:
+      print 'REQUEST FAILED'
+      time.sleep(5)
+      self.login()
 
-def signal_handler(signal, frame):
-  socket.stop()
-  sys.exit(0)
+  def refresh (self):
+    print 'Refresh'
+    headers = { 'Authorization': 'Bearer ' + self.auth['token'] }
+    response = requests.request('POST', self.options.get('host') + '/api/auth/token', headers=headers)
+    if response.status_code is 401:
+      self.login()
+    elif response.status_code is 200:
+      self.auth = response.json()
+      time.sleep((self.auth['expiration'] - int(time.time())) / 2.0 / 1000.0)
+    else:
+      time.sleep(5)
+      self.refresh()
 
-signal.signal(signal.SIGINT, signal_handler)
+
+  @staticmethod
+  def generate_jwt (payload, secret):
+
+    algorithm = { 'alg': 'hs256', 'typ': 'JWT' }
+    algorithm_json = json.dumps(algorithm, separators(',', ':')).encode('utf-8')
+    algorithm_b64 = base64.urlsafe_b64encode(algorithm_json)
+
+    payload['exp'] = (int(time.time()) + 30) * 1000
+    payload_json = json.dumps(payload, separators(',', ':')).encode('utf-8')
+    payload_b64 = base64.urlsafe_b64encode(payload_json).rstrip('=')
+
+    signature = hmac.new(secret.encode('utf-8'), '.'.join([algorithm_b64, payload_b64]), hashlib.sha256).digest()
+    signature_b64 = urlsafe_b64encode(signature).rstrip('=')
+
+    return '.'.join([algorithm_b64, payload_b64, signature_b64])
 
 
+
+
+runtime = Runtime()
