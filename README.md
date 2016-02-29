@@ -111,7 +111,7 @@ device = exp.api.create_device(document)  # Create a device from a dictionary
 ```
 Other available namespaces: experiences, locations, content, data. content does not currently support creation, only "get_content(uuid) and find_content(params)".
 
-# [Interacting with API Resources](#api)
+# Interacting with API Resources
 
 ## API Resources
 Each resource object contains a "document" field which is a dictionary representation of the raw resource, along with "save" and "delete" methods.
@@ -144,7 +144,7 @@ The "feed" resource has a ```get_data()``` method that returns a the feed's deco
 
 
 
-# [Communicating on the EXP Network](#network)
+# Communicating on the EXP Network
 
 The EXP network facilitates real time communication between entities connected to EXP. A user or device can broadcast a JSON serializable payload to users and devices in your organization, and listeners to those broadcasts can respond to the broadcasters.
 
