@@ -1,5 +1,7 @@
+import time
 
-print 'import bnetwork'
+from .authenticator import authenticator
+from .exceptions import NotAuthenticatedError
 
 class Broadcast (object):
 
@@ -128,56 +130,45 @@ from socketIO_client import SocketIO, BaseNamespace
 class Network (object):
 
   def __init__(self):
+    self._options = None
     self._socket = None
-    self._is_connecting = False
-
-  def on_broadcast (self, message):
-    if not isinstance(message, dict):
-      # TODO: Warning about invalid incoming message.
-      return
-    channel = self.channels.get(message.get('channel'))
-    if not channel:
-      # TODO: Log debug message about dropped message.
-      return
-    channel.receive(broadcast)
-
-  def on_channels (self, ids):
-    pass
-
-  def on_subscribed (self, ids):
-    pass
+    self._is_connected = False
+    self._auth = None
+    self._do_stop = False
 
   def start (self, **options):
-    pass
+    self._options = options
+    self._main_event_loop()
 
   def wait (self):
-    pass
+    while not self._is_connected:
+      time.sleep(1)
 
-  @property
-  def isConnected (self):
-    return self._socket is not None
+  def _main_event_loop (self):
+    while not self._do_stop:
+      try:
+        auth = authenticator.get_auth()
+      except NotAuthenticatedError:
+        auth = None
+        return
+      if auth != self._auth:
+        self._auth = auth
+        if self._socket:
+          self._socket.disconnect()
+        parsed_host = urlparse.urlparse(self._auth.get('network', {}).get('host'))
+        self._socket = SocketIO(parsed_host.hostname, parsed_host.port, params={ "token": self._auth.get('token') }, Namespace=SocketNamespace, hurry_interval_in_seconds=10)
+      if self._socket:
+        self._socket.wait_for_callbacks(1)
+      else:
+        time.sleep(1)
+
+  def stop (self):
+    self._do_stop = True
 
 
-  def connect (self, auth):
-    self._auth = auth
-    self._disconnect()
-    self._is_connecting = True
+  def _reconnect(self):
+    
 
-  def disconnect (self):
-    if not self._socket:
-      return
-    self._socket.disconnect()
-    self._socket = None
-
-
-  def _attempt_connect(self):
-    #parsed_host = urlparse.urlparse(self._auth.get('network', {}).get('host'))
-    #self._socket = SocketIO(parsed_host.hostname, parsed_host.port, params={ "token": self._auth.get('token') }, Namespace=SocketNamespace, hurry_interval_in_seconds=10)
-    print 'ESTABLISHED SOCKET CONNECTION'
-
-  def digest (self):
-    if self._is_connecting:
-      return self._attempt_connect()
 
 
 network = Network()

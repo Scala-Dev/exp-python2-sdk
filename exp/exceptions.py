@@ -10,7 +10,8 @@ class AuthenticationError (ExpError):
 class UnexpectedError (ExpError):
   pass
 
-
+class NotAuthenticatedError (ExpError):
+	pass
 
 # Options to exp.start were invalid or incomplete.
 class OptionsError(ExpError):
