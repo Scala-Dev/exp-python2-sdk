@@ -19,6 +19,8 @@ def stop ():
 def get_auth ():
   return _authenticator.get_auth()
 
+def get_channel(*args, **kwargs):
+  return _network.get_channel(*args, **kwargs)
 
 # Terminate the SDK when Ctrl-C is pressed.
 signal.signal(signal.SIGINT, lambda signal, frame: stop())

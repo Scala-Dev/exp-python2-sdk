@@ -1,4 +1,6 @@
 import time
+import threading
+import uuid
 
 from .authenticator import authenticator
 from .exceptions import NotAuthenticatedError
@@ -71,9 +73,8 @@ class Namespace (object):
 
   def listen (self):
     id = str(uuid.uuid4())
-    listener = Listener(id, self)
-    self._listeners.append(listener)
-    return listener
+    self._listeners[id] = Listener()
+    return self._listeners[id]
 
   @property
   def has_active_listeners(self):
@@ -86,62 +87,86 @@ class Channel (object):
   def __init__(self, id):
     self._id = id
     self._namespaces = {}
+    self._subscription = threading.Event()
 
   def broadcast (self, name, payload):
     # Emit and return API response.
     pass
 
   def listen (self, name):
-
-    return self.get_channel(channel_id).listen(name)
+    if not self._namespaces.get(name):
+      self._namespaces[name] = Namespace()
+    listener = self._namespaces[name].listen()
+    if not self._subscription.is_set():
+      network.subscribe(self._id)
+      self._subscription.wait()
+    return listener
 
   @property
   def has_listeners (self):
-      return all([namepsace.has_listeners for key, namepsace in self._namespaces.iteritems()])
+    return all([namepsace.has_listeners for key, namepsace in self._namespaces.iteritems()])
 
-
-class Subscription (object):
-  pass
-
-class SocketHandler (object):
-  pass
 
 
 import urlparse
 from socketIO_client import SocketIO, BaseNamespace
+import json
+import base64
 
-"""class SocketNamespace(BaseNamespace):
-
-  def on_message(self, message):
-    print 'BRO'
-
-  def on_connect(self):
-    print 'CON'
-
-  def on_disconnect(self):
-    print 'DIS'
-
-  def on_subscribed(self, message):
-    print 'SUB'
-
-  def on_channels(self, message):
-    print 'CHAN'"""
 
 class Network (object):
 
   def __init__(self):
+    self._time_since_sync = 0
     self._options = None
     self._socket = None
-    self._is_connected = False
     self._auth = None
     self._do_stop = False
+    self._channels = {}
+    self._subscriptions = {}
+
+  def get_channel(self, name, system=False, consumer=False):
+    id = self._generate_channel_id(name, system, consumer)
+    if not self._channels.get(id):
+      self._channels[id] = Channel(id)
+    return self._channels[id]
+
+  def _generate_channel_id (self, name, system, consumer):
+    organization = authenticator.get_auth().get('identity', {}).get('organization')
+    raw_id = [name, organization, 1 if system else 0, 1 if consumer else 0]
+    json_id = json.dumps(raw_id)
+    return base64.b64encode(json_id)
+
+  def on_disconnect(self):
+    for id, channel in self._channels.iteritems():
+      channel._subscription.clear()
+
+  def on_connect(self):
+    ids = [id for id, channel in self._channels.iteritems() if channel.has_listeners]
+    if ids:
+      self._socket.emit('subscribe', ids)
+
+  def on_subscribed(self, ids):
+    for id in ids:
+      if not self._channels.get(id):
+        self._channels[id] = Channel(id)
+      self._channels[id]._subscription.set()
+
+  def subscribe (self, id):
+    if self._socket and self._socket.connected:
+      print id
+      self._socket.emit('subscribe', [id])
+
+  @property
+  def is_connected(self):
+    return self._socket and self._socket.connected
 
   def start (self, **options):
     self._options = options
     self._main_event_loop()
 
   def wait (self):
-    while not self._is_connected:
+    while not self.is_connected:
       time.sleep(1)
 
   def _main_event_loop (self):
@@ -157,18 +182,27 @@ class Network (object):
           self._socket.disconnect()
         parsed_host = urlparse.urlparse(self._auth.get('network', {}).get('host'))
         self._socket = SocketIO(parsed_host.hostname, parsed_host.port, params={ "token": self._auth.get('token') }, Namespace=SocketNamespace, hurry_interval_in_seconds=10)
-      if self._socket:
-        self._socket.wait_for_callbacks(1)
+      if self.is_connected:
+        self._socket.wait(seconds=1)
       else:
         time.sleep(1)
 
   def stop (self):
-    self._do_stop = True
-
-
-  def _reconnect(self):
-    
-
-
+    self._do_stop = True    
 
 network = Network()
+
+
+class SocketNamespace(BaseNamespace):
+
+  #def on_broadcast(self, message):
+  #  network.on_broadcast(message)
+
+  def on_connect(self):
+    network.on_connect()
+
+  #def on_disconnect(self):
+  #  network.on_disconnect()
+
+  def on_subscribed(self, ids):
+    network.on_subscribed(ids)
