@@ -59,7 +59,7 @@ exp.start(allow_pairing=False)
 Name | Default | Description
 --- | --- | ---
 host | ```'https://api.goexp.io'``` | The api server to authenticate with.
-enable_network | ```True``` | Whether to enable real time network communication. If set to ```False``` you will be unable to listen on the ### EXP network [network] ###.
+enable_network | ```True``` | Whether to enable real time network communication. If set to ```False``` you will be unable to listen on the [EXP network](#network).
 
 ### Exceptions
 
