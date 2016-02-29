@@ -1,23 +1,71 @@
-# Summary and Example
-The SDK is an importable Python module that facilitates API and event bus actions on EXP.
+
+
+
+
+
+# [Starting the SDK](#runtime)
+
+The SDK is started by calling ```exp.start``` and specifying your credentials and configuration options as keyword arguments. ```exp.start``` will start some background processes that keep you authenticated and process network events. You must supply credentials to ```exp.start```. You can supply user, device, or consumer app credentials. You can also authenticate in pairing mode.
+
+When ```exp.start``` returns, you are authenticated and (optionally) connected to the EXP network. The SDK is non blocking and will stop when your main script finishes.
+
+## Using User Credentials
+
+Users must specify their ```username```, ```password```, and ```organization``` as keyword arguments to ```exp.start```.
 
 ```python
 import exp
-exp.start(
-  username="joe@exp.com",
-  password="joesmoe25",
-  host="http://localhost",
-  port=9000,
-  organization="exp")
-devices = exp.api.get_devices()
-devices[0].document.name = "My Device"
-devices[0].save()
-exp.channels.organization.broadcast(name="I changed a device!")
-response = exp.channels.experience.request(name="sendMeMoney", target={ 
-   "device": devices[0].document["uuid"] })
-print response
-exp.runtime.stop()
+
+exp.start(username='joe@joemail.com', password='JoeRocks42', organization='joesorg')
+
 ```
+
+### Using Device Credentials
+
+Devices must specify their ```uuid``` and ```secret``` as keyword arguments.
+
+```python
+import exp
+
+exp.start(uuid='[uuid]', secret='[secret]')
+
+```
+
+### Using Consumer App Credentials
+
+Consumer apps must specify their ```uuid``` and ```api_key``` as keyword arguments.
+
+```python
+import exp
+
+exp.start(uuid='[uuid]', api_key='[api key]')
+
+```
+
+### Pairing Mode
+
+Advanced users can authenticate in pairing mode by setting ```allow_pairing``` to ```False```.
+
+```python
+import exp
+
+exp.start(allow_pairing=False)
+
+```
+
+
+## Additional Options
+
+Name | Default | Description
+--- | --- | ---
+host | ```'https://api.goexp.io'``` | The api server to authenticate with.
+enable_network | ```True``` | Whether to enable real time network communication. If set to ```False``` you will be unable to listen on the ### EXP network [network] ###.
+
+### Exceptions
+
+If the SDK is already running an ```exp.RuntimeError``` will be raised. If the arguments specified to ```exp.start``` are invalid an ```exp.OptionsError``` will be raised.
+
+
 
 # exp.runtime
 
@@ -63,6 +111,8 @@ device = exp.api.create_device(document)  # Create a device from a dictionary
 ```
 Other available namespaces: experiences, locations, content, data. content does not currently support creation, only "get_content(uuid) and find_content(params)".
 
+# [Interacting with API Resources](#api)
+
 ## API Resources
 Each resource object contains a "document" field which is a dictionary representation of the raw resource, along with "save" and "delete" methods.
 ```python
@@ -94,7 +144,7 @@ The "feed" resource has a ```get_data()``` method that returns a the feed's deco
 
 
 
-## The EXP Network
+# [Communicating on the EXP Network](#network)
 
 The EXP network facilitates real time communication between entities connected to EXP. A user or device can broadcast a JSON serializable payload to users and devices in your organization, and listeners to those broadcasts can respond to the broadcasters.
 
