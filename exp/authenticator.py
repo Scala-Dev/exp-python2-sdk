@@ -116,7 +116,7 @@ class _Authenticator (object):
     return self._options.get('host') + '/api/auth/token'
 
 
-  def _get_login_response (self):    
+  def _get_login_response (self):
     response = requests.request('POST', self._get_login_url(), json=self._get_login_payload())
     if response.status_code == 200:
       return response.json()

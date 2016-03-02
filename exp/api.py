@@ -9,6 +9,58 @@ import urllib
 #from .. lib.models.thing import Thing
 #from .. lib.models.feed import Feed
 
+from . import api_utils
+
+
+
+class Resource (object):
+
+  def __init__ (self, document):
+    self.document = document
+
+  @property
+  def uuid (self):
+    return self.document['uuid']
+
+  @classmethod
+  def _get_path (cls):
+    raise Exception('Not implemented.')
+
+  @classmethod
+  def get (cls, uuid):
+    return cls(api_utils.get(self.get_path() + '/' + uuid))
+
+  @classmethod
+  def create (cls, document):
+    resource = cls(document)
+    resource.save()
+    return resource
+
+  @classmethod
+  def find (cls, params):
+    response = api_utils.get(self._get_path(), params)
+    query = [cls(document) for document in response['results']]
+    query.total = response['total']
+    return query
+
+  def _get_path (self):
+    return self.__cls__.get_path() + '/' + self.uuid
+
+  def save (self):
+    return api_utils.patch(self._get_path(), self.document)
+
+  def refresh (self):
+    self.document = api_utils.get(this._get_path())
+
+  def get_channel (self, **kwargs):
+    return network.get_channel(self._get_channel_name(), **kwargs)
+
+  def _get_channel_name (self):
+    return self.uuid
+
+  def fling (payload, **kwargs):
+    return self.get_channel().broadcast('fling', payload, **kwargs)
+
 
 """ Content """
 
