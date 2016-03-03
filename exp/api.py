@@ -1,19 +1,25 @@
 import urllib
 
-#from .. lib import api_utils
-#from .. lib.models.device import Device
-#from .. lib.models.location import Location
-#from .. lib.models.experience import Experience
-#from .. lib.models.content import Content
-#from .. lib.models.data import Data
-#from .. lib.models.thing import Thing
-#from .. lib.models.feed import Feed
-
 from . import api_utils
 
 
+class QueryResult (object):
+
+  def __init__(self, results=None, total=None):
+    self.results = results
+    self.total = total
+
+  def __iter__(self):
+    for result in self.results:
+      yield result
+
+  def __str__(self):
+    return str([result for result in self.results])
+
 
 class Resource (object):
+
+  path = None
 
   def __init__ (self, document):
     self.document = document
@@ -37,14 +43,13 @@ class Resource (object):
     return resource
 
   @classmethod
-  def find (cls, params):
-    response = api_utils.get(self._get_path(), params)
-    query = [cls(document) for document in response['results']]
-    query.total = response['total']
-    return query
+  def find (cls, params=None):
+    response = api_utils.get(cls.path, params)
+    response['results'] = [cls(document) for document in response['results']]
+    return QueryResult(**response)
 
   def _get_path (self):
-    return self.__cls__.get_path() + '/' + self.uuid
+    return self.__cls__.path + '/' + self.uuid
 
   def save (self):
     return api_utils.patch(self._get_path(), self.document)
@@ -62,99 +67,113 @@ class Resource (object):
     return self.get_channel().broadcast('fling', payload, **kwargs)
 
 
-""" Content """
+class Device (Resource):
 
-def get_content(uuid):
-  return Content(
-    api_utils.get("/api/content/" + uuid + "/children"),
-    _is_children_populated=True)
+  path = '/api/devices'
 
-def find_content(**params):
-  query = api_utils.get('/api/content', params=params)
-  empty = []
-  return [Content(x, _is_children_populated=False) for x in query.get("results", empty)]
+  def identify (self):
+    return self.get_channel().broadcast('identify', null, 500)
 
 
-""" Devices """
+class Thing (Resource):
 
-def find_devices(**params):
-  query = api_utils.get('/api/devices', params=params)
-  empty = []
-  return [Device(x, _new=False) for x in query.get("results", empty)]
-
-def get_device(uuid):
-  return Device(api_utils.get('/api/devices/' + uuid), _new=False)
-
-def create_device(document):
-  return Device(document).save()
+  path = '/api/things'
 
 
-""" Things """
+class Feed (Resource):
 
-def find_things(**params):
-  query = api_utils.get('/api/things', params=params)
-  empty = []
-  return [Thing(x, _new=False) for x in query.get("results", empty)]
+  path = '/api/connectors/feeds'
 
-def get_thing(uuid):
-  return Thing(api_utils.get('/api/things/' + uuid), _new=False)
-
-def create_thing(document):
-  return Thing(document).save()
+  def get_data (self):
+    return api_utils(self._gat_path() + '/data')
 
 
-""" Experiences """
+class Experience (Resource):
 
-def find_experiences(**params):
-  query = api_utils.get('/api/experiences', params=params)
-  empty = []
-  return [Experience(x, _new=False) for x in query.get("results", empty)]
-
-def get_experience(uuid):
-  return Experience(api_utils.get('/api/experiences/' + uuid), _new=False)
-
-def create_experience(document):
-  return Experience(document).save()
+  path = '/api/experiences'
 
 
-""" Locations """
+class Location (Resource):
 
-def find_locations(**params):
-  query = api_utils.get('/api/locations', params=params)
-  empty = []
-  return [Location(x, _new=False) for x in query.get("results", empty)]
+  path = '/api/locations'
 
-def get_location(uuid):
-  return Location(api_utils.get('/api/locations/' + uuid), _new=False)
+  def get_zones (self):
+    return [Zone(document, self) for document in self.document['zones']]
 
-def create_location(document):
-  return Location(document).save()
+  def get_layout_url (self):
+    return self._get_path() + '/layout?_rt=' + authenticator.get_auth()['restrictedToken']
 
 
-""" Data """
+class Zone (Resource):
 
-def get_data(key, group):
-    key = urllib.quote(key, safe='')
-    group = urllib.quote(group, safe='')
-    return Data(**api_utils.get('/api/data/' + group + '/' + key))
+  def __init__ (self, document, location):
+    self._location = location
+    super(Zone, self).__init__(document)
 
-def find_data(**params):
-    query = api_utils.get('/api/data', params=params)
-    return [Data(**x) for x in query.get('results', [])]
+  def save (self):
+    return self._location.save()
 
-def create_data(**params):
-    return Data(**params).save()
-    
+  def _get_channel_name (self):
+    return self._location.uuid + ':zone:' + self.document['key']
 
-""" Feeds """
 
-def find_feeds(**params):
-  query = api_utils.get('/api/connectors/feeds', params=params)
-  empty = []
-  return [Feed(x, _new=False) for x in query.get("results", empty)]
+class Data (Resource):
 
-def get_feed(uuid):
-  return Feed(api_utils.get('/api/connectors/feeds/' + uuid), _new=False)
+  path = '/api/data'
 
-def create_feed(document):
-  return Feed(document).save()
+  def get_path (self):
+    return self.__cls__.path + '/' + urllib.quote(this.document['group']) + '/' + urllib.quote(this.document['key'])
+
+  @classmethod
+  def get (cls, group, key):
+    resource = cls({ 'group': group, 'key': key })
+    resource.refresh()
+    return resource
+
+  @classmethod
+  def create (cls, group, key, value):
+    resource = cls({ 'group': group, 'key': key, 'value': value })
+    resource.save()
+    return resource
+
+  def get_channel_name (self):
+    return 'data' + ':' + this.document['key'] + ':' + this.document['group']
+
+
+class Content (Resource):
+
+  path = '/api/content'
+
+  @property
+  def children (self):
+    if self._children is None:
+      if self.document['children']:
+        return [self.__cls__(document) for document in self.document['children']]
+      else:
+        self.refresh()
+        return self.children
+    return []
+
+  @property
+  def subtype (self):
+    return self.document['subtype']
+
+  def get_url (self):
+    auth = authenticator.get_auth()
+    delivery_url = auth['api']['host'] + '/api/delivery'
+    rt_string = '?_rt=' + auth['restrictedToken']
+    if self.subtype == 'scala:content:file':
+      return delivery_url + this.document.path + rt_string
+    elif self.subtype == 'scala:content:app':
+      return delivery_url + this.document.path + rt_string
+    elif self.subtype == 'scala:content:url':
+      return self.document['url']
+
+  def get_variant_url (name):
+    auth = authenticator.get_auth()
+    delivery_url = auth['api']['host'] + '/api/delivery'
+    rt_string = '?_rt=' + auth['restrictedToken']
+    if self.subtype == 'scala:content:file' and name in this.document['variants']:
+      return delivery_url + '?variant=' + urllib.quote(name) + rt_string
+
+

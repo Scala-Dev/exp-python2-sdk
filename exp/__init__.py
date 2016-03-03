@@ -15,11 +15,6 @@ from . import api_utils
 def start (*args, **kwargs):
   return _runtime.start(*args, **kwargs)
 
-def stop ():
-  _runtime.stop()
-  return sys.exit(1)
-
-
 def get_auth ():
   return _authenticator.get_auth()
 
@@ -46,7 +41,7 @@ def delete (*args, **kwargs):
 def get_device (*args, **kwargs):
   return api.Device.get(*args, **kwargs)
 
-def find_device (*args, **kwargs):
+def find_devices (*args, **kwargs):
   return api.Device.find(*args, **kwargs)
 
 def create_device (*args, **kwargs):
@@ -56,7 +51,7 @@ def create_device (*args, **kwargs):
 def get_thing (*args, **kwargs):
   return api.Thing.get(*args, **kwargs)
 
-def find_thing (*args, **kwargs):
+def find_things (*args, **kwargs):
   return api.Thing.find(*args, **kwargs)
 
 def create_thing (*args, **kwargs):
@@ -66,7 +61,7 @@ def create_thing (*args, **kwargs):
 def get_experience (*args, **kwargs):
   return api.Experience.get(*args, **kwargs)
 
-def find_experience (*args, **kwargs):
+def find_experiences (*args, **kwargs):
   return api.Experience.find(*args, **kwargs)
 
 def create_experience (*args, **kwargs):
@@ -76,7 +71,7 @@ def create_experience (*args, **kwargs):
 def get_location (*args, **kwargs):
   return api.Location.get(*args, **kwargs)
 
-def find_location (*args, **kwargs):
+def find_locations (*args, **kwargs):
   return api.Location.find(*args, **kwargs)
 
 def create_location (*args, **kwargs):
@@ -96,7 +91,7 @@ def create_data (*args, **kwargs):
 def get_feed (*args, **kwargs):
   return api.Feed.get(*args, **kwargs)
 
-def find_feed (*args, **kwargs):
+def find_feeds (*args, **kwargs):
   return api.Feed.find(*args, **kwargs)
 
 def create_feed (*args, **kwargs):
@@ -111,5 +106,5 @@ def find_content (*args, **kwargs):
 
 
 # Terminate the SDK when Ctrl-C is pressed.
-signal.signal(signal.SIGINT, lambda signal, frame: stop())
+signal.signal(signal.SIGINT, lambda signal, frame: sys.exit(1))
 

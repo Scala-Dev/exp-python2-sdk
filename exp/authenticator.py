@@ -9,136 +9,77 @@ class _Authenticator (object):
 
   def __init__(self):
     self._auth = None
-    self._do_stop = False
-    self._exception = None
     self._options = None
+    self._time = None
 
   def get_auth(self):
-    if not self._auth:
-      raise NotAuthenticatedError()
+    if not self._options:
+      raise AuthenticationError('Attempted to authenticate without credentials.')
+    elif not self._auth:
+      self._login()
+    elif self._time < int(time.time()):
+      self._refresh()
     return self._auth
 
-
-  def start (self, **options):
+  def set_options (self, **options):
     self._options = options
-    self._main_event_loop()
-
-
-  def stop (self):
-    self._do_stop = True
-
-
-  def wait (self):
-    while not self._auth and not self._do_stop and not self._exception:
-      time.sleep(.5)
-    if self._exception:
-      raise self._exception
-
-
-  def _main_event_loop (self):
-    while not self._do_stop:
-      if self._auth and self._is_refresh_needed:
-        self._auth = self._refresh()
-      elif not self._auth:
-        self._auth = self._login()
-      time.sleep(1)
-
-  @property
-  def _is_refresh_needed (self):
-    return self._auth.get('expiration') / 1000.0 - int(time.time()) < 3600
-
+    self._auth = None
 
   def _login (self):
-    logger.info('Logging into EXP.')
-    try:
-      auth = self._get_login_response()
-    except AuthenticationError as exception:
-      logger.critical('Authentication failed. Credentials are invalid.')
-      self._exception = exception
-    except Exception as exception:
-      logger.warning('Authentication failed for unexpected reason. See debug log for more information.')
-      logger.debug(traceback.format_exc())
+    payload = {}
+    if self._options.get('type') is 'user':
+      logger.debug('Login started as a user.')
+      payload['username'] = self._options.get('username')
+      payload['password'] = self._options.get('password')
+      payload['organization'] = self._options.get('organization')
+    elif self._options.get('type') is 'device':
+      logger.debug('Login started as a device.')
+      token_payload = {}
+      token_payload['uuid'] = self._options.get('uuid') or '_'
+      token_payload['allowPairing'] = self._options.get('allow_pairing')
+      payload['token'] = self.generate_jwt(token_payload, self._options.get('secret') or '_')
+    elif self._options.get('type') is 'consumer_app':
+      logger.debug('Login started as a consumer app.')
+      token_payload = {}
+      token_payload['uuid'] = self._options.get('uuid') or '_'
+      payload['token'] = self.generate_jwt(token_payload, self._options.get('api_key'))
+    url = self._options.get('host') + '/api/auth/login'
+    response = requests.request('POST', url, json=payload)
+    if response.status_code == 200:
+      self._on_success(response)
+      logger.debug('Login successful.')
+    elif response.status_code == 401:
+      raise AuthenticationError('Login failed due to invalid credentials.')
     else:
-      logger.info('Login successful.')
-      return auth
+      raise UnexpectedError('Login failed due to an unexpected HTTP status code: %s.' % response.status_code)
 
   def _refresh (self):
-    logger.info('Refreshing authentication token.')
+    logger.debug('Authentication token refresh starting.')
+    url = self._options.get('host') + '/api/auth/token'
+    headers = { 'Authorization': 'Bearer ' + self._auth.get('token') }
     try:
-      auth = self._get_refresh_response()
+      response = requests.request('POST', url, headers=headers)
     except Exception as exception:
-      logger.warning('Authentication token refresh failed.')
-      logger.debug(traceback.format_exc())
-    else:
-      logger.info('Authentication token refresh successful.')
-      return auth
-
-
-  def _get_login_payload (self):
-    if self._options.get('type') is 'user':
-      return self._get_user_login_payload()
-    elif self._options.get('type') is 'device':
-      return self._get_device_login_payload()
-    elif self._options.get('type') is 'consumer_app':
-      return self._get_consumer_app_login_payload()
-
-
-  def _get_user_login_payload (self):
-    payload = {}
-    payload['username'] = self._options.get('username')
-    payload['password'] = self._options.get('password')
-    payload['organization'] = self._options.get('organization')
-    return payload
-
-
-  def _get_device_login_payload (self):
-    payload = {}
-    token_payload = {}
-    token_payload['uuid'] = self._options.get('uuid') or '_'
-    token_payload['allowPairing'] = self._options.get('allow_pairing')
-    payload['token'] = self.generate_jwt(token_payload, self._options.get('secret') or '_')
-    return payload
-
-
-  def _get_consumer_app_login_payload (self):
-    payload = {}
-    token_payload = {}
-    token_payload['uuid'] = self._options.get('uuid') or '_'
-    payload['token'] = self.generate_jwt(token_payload, self._options.get('api_key'))
-    return payload
-
-
-  def _get_login_url (self):
-    return self._options.get('host') + '/api/auth/login'
-
-
-  def _get_refresh_url (self):
-    return self._options.get('host') + '/api/auth/token'
-
-
-  def _get_login_response (self):
-    response = requests.request('POST', self._get_login_url(), json=self._get_login_payload())
-    if response.status_code == 200:
-      return response.json()
-    elif response.status_code == 401:
-      raise AuthenticationError('Authentiation failed.')
-    else:
-      raise UnexpectedError('Authentication failed due to an unexpected status code: %s.' % response.status_code)
-
-
-  def _get_refresh_headers (self):
-    return { 'Authorization': 'Bearer ' + self._auth.get('token') }
-
-
-  def _get_refresh_response (self):
-    response = requests.request('POST', self._get_refresh_url(), headers=self._get_refresh_headers())
+      raise UnexpectedError('Authentication token refresh encountered an unexpected error.')
     if response.status_code is 200:
-      return response.json()
+      self._on_success(response)
+      logger.debug('Authentication token refresh successful.')
     elif response.status_code is 401:
-      raise AuthenticationError('Authentication failed.')
+      logger.debug('Authentication token refresh failed due to expired or invalid token.')
+      self._login()
     else:
-      raise UnexpectedError('Authentication token refresh failed due to an unexpected status code: %d.' % response.status_code)
+      raise UnexpectedError('Authentication token refresh request failed due to an unexpected HTTP status code: %d' % response.status_code)
 
+  def _on_success (self, response):
+    logger.debug('Authentication update starting.')
+    try:
+      auth = response.json()
+    except Exception as exception:
+      raise UnexpectedError('An unexpected error has occured parsing authentication response.')
+    else:
+      self._auth = auth
+      self._time = (int(time.time()) + auth['expiration'] * 3.0 / 1000.0 ) / 4.0
+      logger.debug('Authentication update successful: %s' % auth)
 
   @staticmethod
   def generate_jwt (payload, secret):

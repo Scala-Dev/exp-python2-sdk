@@ -45,6 +45,7 @@ class Base(object):
     self.did_authenticator_wait = True
 
   def setUp (self):
+    exp._runtime._is_started = False
     self.stub()
 
   def tearDown (self):

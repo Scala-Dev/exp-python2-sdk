@@ -14,9 +14,6 @@ from .exceptions import RuntimeError, OptionsError
 
 class _Runtime (object):
 
-  def __init__ (self):
-    self._is_started = False
-
   def start (self, enable_events=True, host='https://api.goexp.io', **options):
 
     options['host'] = host
@@ -45,27 +42,9 @@ class _Runtime (object):
     else:
       raise OptionsError('Please specify authentication type.')
 
-    if self._is_started:
-      raise RuntimeError('Runtime already started.')
-    self._is_started = True
+    network.set_options(**options)
+    authenticator.set_options(**options)
+    authenticator.get_auth()
 
-    authenticator_thread = threading.Thread(target=lambda: authenticator.start(**options))
-    authenticator_thread.start()
-
-    try:
-      authenticator.wait()
-    except Exception as exception:
-      self.stop()
-      raise
-
-    if enable_events:
-      network_thread = threading.Thread(target=lambda: network.start(**options))
-      network_thread.start()
-      network.wait()
-
-
-  def stop (self):
-    authenticator.stop()
-    network.stop()
 
 runtime = _Runtime()

@@ -2,7 +2,7 @@ import time
 import threading
 import uuid
 
-
+from .logger import logger
 
 import urlparse
 from socketIO_client import SocketIO, BaseNamespace
@@ -117,7 +117,7 @@ class Channel (object):
 
   @property
   def has_listeners (self):
-    return any([namepsace.has_listeners for key, namepspace in self._namespaces.iteritems()])
+    return any([namespace.has_listeners for key, namespace in self._namespaces.iteritems()])
 
 
 
@@ -129,6 +129,13 @@ class Network (object):
     self._auth = None
     self._do_stop = False
     self._channels = {}
+    self._parent_thread = threading.currentThread()
+
+    network_thread = threading.Thread(target=lambda: self._main_event_loop())
+    network_thread.start()
+
+  def set_options (self, **options):
+    self._options = options
 
   def get_channel(self, name, system=False, consumer=False):
     id = self._generate_channel_id(name, system, consumer)
@@ -168,20 +175,31 @@ class Network (object):
     if self.is_connected:
       self._socket.emit('subscribe', [id])
 
-  def start (self, **options):
-    self._options = options
-    self._main_event_loop()
 
   def wait (self):
     while not self.is_connected:
       time.sleep(1)
+
+  def _disconnect (self):
+    if self._socket:
+      self._socket.disconnect()
+      self._socket = None
 
   @property
   def is_connected(self):
     return self._socket and self._socket.connected
 
   def _main_event_loop (self):
-    while not self._do_stop:
+    while True:
+      if not self._parent_thread.is_alive():
+        self._disconnect()
+        break;
+      elif not self._options:
+        time.sleep(1)
+      elif not self._options.get('enable_events'):
+        self._disconnect()
+        time.sleep(1)
+
       try:
         auth = authenticator.get_auth()
       except NotAuthenticatedError:
@@ -197,9 +215,6 @@ class Network (object):
         self._socket.wait(seconds=1)
       else:
         time.sleep(1)
-
-  def stop (self):
-    self._do_stop = True
 
 
 class SocketNamespace(BaseNamespace):

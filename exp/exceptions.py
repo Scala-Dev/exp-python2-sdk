@@ -1,14 +1,21 @@
 
+from .logger import logger
 
 class ExpError (Exception):
-  pass
+  def __init__(self, message):
+    logger.error('')
+
 
 
 class AuthenticationError (ExpError):
   pass
 
 class UnexpectedError (ExpError):
-  pass
+
+  def __init__ (self, *arg, **kwargs):
+    logger.debug('An unexpected error occured:')
+    logger.debug(traceback.format_exc())
+    super(UnexpectedError, self).__init__(*args, **kwargs)
 
 class NotAuthenticatedError (ExpError):
 	pass
