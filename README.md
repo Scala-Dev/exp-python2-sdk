@@ -153,43 +153,53 @@ The EXP network facilitates real time communication between entities connected t
 All messages on the EXP network are sent over a channel. Channels have a name, and two flags: ```system``` and ```consumer```.
 
 ```python
-channel = exp.get_channel("my_channel", system=False, consumer=False)
+channel = exp.get_channel('my_channel', system=False, consumer=False)
 ```
 
 Use ```system=True``` to get a system channel. You cannot send messages on a system channels but can listen for system notifications, such as updates to API resources.
 
 Use ```consumer=True``` to get a consumer channel. Consumer devices can only listen or broadcast on consumer channels. When ```consumer=False``` you will not receive consumer device broadcasts and consumer devices will not be able to hear your broadcasts.
 
-Both ```system``` and ```consumer``` default to ```False``` except for consumer devices, where ```consumer``` will always be ```True``` for all channels.
+Both ```system``` and ```consumer``` default to ```False```. Consumer devices will be unable to broadcast or listen to messages on non-consumer channels.
 
 
 ### Broadcasting
 
-Use the broadcast method of a channel object to send a named message with a JSON serializable payload to other entities on the EXP network. You can optionally include a timeout to wait for responses to the broadcast. The broadcast will block for approximately the given timeout and return a list of response payloads. Each response payload can any JSON serializable type.
+Use the broadcast method of a channel object to send a named message containing an optional JSON serializable payload to other entities on the EXP network. You can optionally include a timeout to wait for responses to the broadcast. The broadcast will block for approximately the given timeout and return a ```list``` of response payloads. Each response payload can any JSON serializable type.
 
 ```python
-channel = exp.get_channel("my_channel")
-responses = channel.broadcast(name='Hello!', timeout=5, payload=[1, 2, 3])
+
+channel = exp.get_channel('my_channel')
+responses = channel.broadcast(name='my_event', timeout=5, payload='hello')
 [print response for response in responses]
+
 ```
 
 
 ### Listening
 
-To listen for broadcasts, call the listen method of a channel object. 
+To listen for broadcasts, call the listen method of a channel object and pass in the name of the event you wish to listen for. When EXP registers you to listen on the desired channel, a ```listener``` object will be returned. 
+
+Call the ```wait``` method of a listener to block until a broadcast is received.
+
+
 
 ```python
-channel = exp.get_channel("my_channel")
-listener = channel.listen("my_event")
+
+channel = exp.get_channel('my_channel')
+listener = channel.listen('my_event')
 
 while True:
   broadcast = listener.wait(5)
-  if broadcast: 
-    print "Message received!"
+  if broadcast:
+    print 'Message received!'
     print broadcast.payload
+    listener.cancel()
+    break
+
 ```
 
-
+Broadcasts that come in while not waiting on the listener will be queued.
 
 
 ### Responding
@@ -198,14 +208,14 @@ To respond to broadcast, call the respond method on the broadcast object, option
 
 ```python
 
-channel = exp.get_channel("my_channel")
-listener = channel.listen(name="my_custom_event")
+channel = exp.get_channel('my_channel')
+listener = channel.listen(name='my_event')
 
 while True:
   broadcast = listener.wait(5)
-  if broadcast and broadcast.payload is "hello!":
-    print "Responding to broadcast."
-    broadcast.respond("Nice to meet you!")
+  if broadcast and broadcast.payload is 'hello':
+    print 'Responding to broadcast.'
+    broadcast.respond('Nice to meet you!')
 
 ```
 
