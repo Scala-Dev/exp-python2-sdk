@@ -1,6 +1,7 @@
 import urllib
 
 from . import api_utils
+from .network import network
 
 
 class QueryResult (object):
@@ -15,6 +16,12 @@ class QueryResult (object):
 
   def __str__(self):
     return str([result for result in self.results])
+
+  def __contains__ (self, item):
+    return item in self.results
+
+  def __len__ (self):
+    return len(self.results)
 
 
 class Resource (object):
@@ -34,13 +41,13 @@ class Resource (object):
 
   @classmethod
   def get (cls, uuid):
-    return cls(api_utils.get(self.get_path() + '/' + uuid))
+    return cls(api_utils.get(cls.path + '/' + uuid))
 
   @classmethod
-  def create (cls, document):
-    resource = cls(document)
-    resource.save()
-    return resource
+  def create (cls, document=None):
+    if not document: document = {}
+    document = api_utils.post(cls.path, document)
+    return cls(document)
 
   @classmethod
   def find (cls, params=None):
@@ -49,10 +56,14 @@ class Resource (object):
     return QueryResult(**response)
 
   def _get_path (self):
-    return self.__cls__.path + '/' + self.uuid
+    return self.__class__.path + '/' + self.uuid
+
+  def delete (self):
+    return api_utils.delete(self._get_path())
 
   def save (self):
-    return api_utils.patch(self._get_path(), self.document)
+    document = api_utils.patch(self._get_path(), self.document)
+    self.document = document
 
   def refresh (self):
     self.document = api_utils.get(this._get_path())
@@ -72,7 +83,7 @@ class Device (Resource):
   path = '/api/devices'
 
   def identify (self):
-    return self.get_channel().broadcast('identify', null, 500)
+    return self.get_channel().broadcast('identify', None, 500)
 
 
 class Thing (Resource):
@@ -122,7 +133,7 @@ class Data (Resource):
   path = '/api/data'
 
   def get_path (self):
-    return self.__cls__.path + '/' + urllib.quote(this.document['group']) + '/' + urllib.quote(this.document['key'])
+    return self.__class__.path + '/' + urllib.quote(this.document['group']) + '/' + urllib.quote(this.document['key'])
 
   @classmethod
   def get (cls, group, key):
@@ -148,7 +159,7 @@ class Content (Resource):
   def children (self):
     if self._children is None:
       if self.document['children']:
-        return [self.__cls__(document) for document in self.document['children']]
+        return [self.__class__(document) for document in self.document['children']]
       else:
         self.refresh()
         return self.children

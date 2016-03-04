@@ -1,9 +1,13 @@
 import time
 import traceback
 import requests
+import json
+import base64
+import hmac
+import hashlib
 
 from .logger import logger
-from .exceptions import AuthenticationError, UnexpectedError, NotAuthenticatedError
+from .exceptions import AuthenticationError, UnexpectedError, RuntimeError
 
 class _Authenticator (object):
 
@@ -12,18 +16,18 @@ class _Authenticator (object):
     self._options = None
     self._time = None
 
+  def configure (self, **options):
+    self._options = options
+    self._auth = None
+
   def get_auth(self):
     if not self._options:
-      raise AuthenticationError('Attempted to authenticate without credentials.')
+      raise RuntimeError('SDK has not been configured.')
     elif not self._auth:
       self._login()
     elif self._time < int(time.time()):
       self._refresh()
     return self._auth
-
-  def set_options (self, **options):
-    self._options = options
-    self._auth = None
 
   def _login (self):
     payload = {}
@@ -77,6 +81,8 @@ class _Authenticator (object):
     except Exception as exception:
       raise UnexpectedError('An unexpected error has occured parsing authentication response.')
     else:
+      logger.critical(auth)
+      logger.critical(response.status_code)
       self._auth = auth
       self._time = (int(time.time()) + auth['expiration'] * 3.0 / 1000.0 ) / 4.0
       logger.debug('Authentication update successful: %s' % auth)
@@ -84,16 +90,16 @@ class _Authenticator (object):
   @staticmethod
   def generate_jwt (payload, secret):
 
-    algorithm = { 'alg': 'hs256', 'typ': 'JWT' }
-    algorithm_json = json.dumps(algorithm, separators(',', ':')).encode('utf-8')
-    algorithm_b64 = base64.urlsafe_b64encode(algorithm_json)
+    algorithm = { 'alg': 'HS256', 'typ': 'JWT' }
+    algorithm_json = json.dumps(algorithm, separators=(',', ':')).decode('utf-8')
+    algorithm_b64 = base64.urlsafe_b64encode(algorithm_json).rstrip('=')
 
     payload['exp'] = (int(time.time()) + 30) * 1000
-    payload_json = json.dumps(payload, separators(',', ':')).encode('utf-8')
+    payload_json = json.dumps(payload, separators=(',', ':'))
     payload_b64 = base64.urlsafe_b64encode(payload_json).rstrip('=')
 
-    signature = hmac.new(secret.encode('utf-8'), '.'.join([algorithm_b64, payload_b64]), hashlib.sha256).digest()
-    signature_b64 = urlsafe_b64encode(signature).rstrip('=')
+    signature = hmac.new(secret, '.'.join([algorithm_b64, payload_b64]), hashlib.sha256).digest()
+    signature_b64 = base64.urlsafe_b64encode(signature).rstrip('=')
 
     return '.'.join([algorithm_b64, payload_b64, signature_b64])
 

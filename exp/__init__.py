@@ -5,6 +5,7 @@ import sys
 
 from .runtime import runtime as _runtime
 from .network import network as _network
+from .network import socket as _socket
 from .authenticator import authenticator as _authenticator
 from .exceptions import *
 from . import api
@@ -20,6 +21,9 @@ def get_auth ():
 
 def get_channel(*args, **kwargs):
   return _network.get_channel(*args, **kwargs)
+
+def get_connection_status(*args, **kwargs):
+  return _socket.is_connected
 
 
 def get (*args, **kwargs):

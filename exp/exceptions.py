@@ -1,10 +1,9 @@
 
 from .logger import logger
+import traceback
 
 class ExpError (Exception):
-  def __init__(self, message):
-    logger.error('')
-
+  pass
 
 
 class AuthenticationError (ExpError):
@@ -17,13 +16,18 @@ class UnexpectedError (ExpError):
     logger.debug(traceback.format_exc())
     super(UnexpectedError, self).__init__(*args, **kwargs)
 
-class NotAuthenticatedError (ExpError):
-	pass
-
-# Options to exp.start were invalid or incomplete.
-class OptionsError(ExpError):
-  pass
-
 # Cannot execute desired action.
 class RuntimeError(ExpError):
   pass
+
+class ApiError(ExpError):
+
+  def __init__(self, payload):
+    logger.debug('An api error has occured.')
+    logger.debug(traceback.format_exc())
+    self.message = payload.get('message')
+    self.code = payload.get('code')
+
+  def __str__(self):
+    return '%s: %s' % (self.code, self.message)
+
