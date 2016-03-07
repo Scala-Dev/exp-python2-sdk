@@ -6,6 +6,7 @@ import base64
 import hmac
 import hashlib
 
+
 from .logger import logger
 from .exceptions import AuthenticationError, UnexpectedError, RuntimeError
 

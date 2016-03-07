@@ -1,37 +1,12 @@
 
-import time
-import json
-import hmac
-import base64
-import hashlib
-import requests
-import threading
-
 from .logger import logger
 from .network import network
 from .authenticator import authenticator
-from .exceptions import RuntimeError, ExpError
-import traceback
+from .exceptions import RuntimeError
 
 class Runtime (object):
 
-  is_started = False
-
-  def start (self, *args, **kwargs):
-    try:
-      self._start(*args, **kwargs)
-    except ExpError:
-      logger.debug('An error has occured:')
-      logger.debug(traceback.format_exc())
-      raise
-    except Exception:
-      logger.debug('An unexpected error has occured:')
-      logger.debug(traceback.format_exc())
-      raise UnexpectedError('An unexpected error has occured.')
-    else:
-      logger.info('EXP SDK started successfully.')
-
-  def _start (self, enable_network=True, host='https://api.goexp.io', **options):
+  def start (self, enable_network=True, host='https://api.goexp.io', **options):
 
     options['host'] = host
     options['enable_network'] = enable_network
@@ -59,9 +34,11 @@ class Runtime (object):
     else:
       raise RuntimeError('Please specify authentication type.')
 
-    network.configure(**options)
-    authenticator.configure(**options)
+    authenticator.configure(**options)  # Configure the authenticator.
+    network.configure(**options)  # Configure the network.
+    network.start()
     authenticator.get_auth()  # Block until authentication has been received.
+    logger.info('EXP SDK started successfully.')
 
 
 runtime = Runtime()

@@ -3,7 +3,12 @@ from .logger import logger
 import traceback
 
 class ExpError (Exception):
-  pass
+
+  def __init__ (self, message):
+    self.message = message
+
+  def __str__ (self):
+    return self.message
 
 
 class AuthenticationError (ExpError):
@@ -18,7 +23,13 @@ class UnexpectedError (ExpError):
 
 # Cannot execute desired action.
 class RuntimeError(ExpError):
-  pass
+
+  def __init__ (self, message):
+    logger.debug('A runtime error has occured: %s' % message)
+
+  def __str__ (self):
+    return self.message
+
 
 class ApiError(ExpError):
 

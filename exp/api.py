@@ -23,6 +23,10 @@ class QueryResult (object):
   def __len__ (self):
     return len(self.results)
 
+  def __getitem__ (self, index):
+    return self.results[index]
+
+
 
 class Resource (object):
 

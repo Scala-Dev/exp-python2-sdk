@@ -128,13 +128,24 @@ class _Network (object):
     self._options = None
     self._parent = threading.currentThread()
     self._thread = None
+    self._lock = threading.Lock()
+    self._is_started = False
 
-  def configure (self, **options):
-    self._auth = None
-    self._options = options
+  def start (self):
+    self._lock.aquire()
+    if self._is_started:
+      return
+    self._is_started = True
     self._parent = threading.currentThread()
     self._thread = threading.Thread(target=lambda: self._main_event_loop())
     self._thread.start()
+    self._lock.release()
+
+  def configure (self, **options):
+    self._lock.acquire()
+    self._auth = None
+    self._options = options
+    self._lock.release()
 
   def get_channel(self, name, system=False, consumer=False):
     channel_id = self._generate_channel_id(name, system, consumer)
@@ -172,9 +183,19 @@ class _Network (object):
 
     while True:
 
-      """ Break if parent thread is dead. """
-      if not self._options['enable_network'] or not self._parent.is_alive():
+      self._lock.acquire()
+
+      """ If network is not enabled or options aren't set, disconnect and wait. """
+      if not self._options or not self._options['enable_network']:
         socket.disconnect()
+        self._lock.release()
+        time.sleep(1)
+        continue
+
+      """ If parent thread is dead, disconnect and break event loop. """
+      if self._parent and not self._parent.is_alive():
+        socket.disconnect()
+        self._lock.release()
         break;
 
       """ Attempt to retrieve current auth. If auth has changed, reconnect. """
@@ -184,11 +205,20 @@ class _Network (object):
           self._auth = auth
           socket.connect(**self._auth)
       except Exception:
+        socket.disconnect()
+        self._lock.release()
         time.sleep(1)
         continue
 
       """ Listen for socket events. """
-      socket.wait(1)
+      try:
+        socket.wait(1)
+      except Exception:
+        self._lock.release()
+        time.sleep(1)
+        continue
+      else:
+        self._lock.release()
 
 
 
