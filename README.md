@@ -180,7 +180,7 @@ experience.save()
 ```
 
 
-# Tutorial: The EXP Network
+## Using The EXP Network
 
 The EXP network facilitates real time communication between entities connected to EXP. A user or device can broadcast a JSON serializable payload to users and devices in your organization, and listeners to those broadcasts can respond to the broadcasters.
 
