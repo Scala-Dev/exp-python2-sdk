@@ -7,37 +7,25 @@ The SDK is started by calling ```exp.start``` and specifying your credentials an
 Users must specify their ```username```, ```password```, and ```organization``` as keyword arguments to ```exp.start```.
 
 ```python
-import exp
-
 exp.start(username='joe@joemail.com', password='JoeRocks42', organization='joesorg')
-
 ```
 
 Devices must specify their ```uuid``` and ```secret``` as keyword arguments.
 
 ```python
-import exp
-
 exp.start(uuid='[uuid]', secret='[secret]')
-
 ```
 
 Consumer apps must specify their ```uuid``` and ```api_key``` as keyword arguments.
 
 ```python
-import exp
-
 exp.start(uuid='[uuid]', api_key='[api key]')
-
 ```
 
 Advanced users can authenticate in pairing mode by setting ```allow_pairing``` to ```False```.
 
 ```python
-import exp
-
 exp.start(allow_pairing=False)
-
 ```
 
 Additional options:
@@ -48,8 +36,7 @@ host | ```'https://api.goexp.io'``` | The api server to authenticate with.
 enable_network | ```True``` | Whether to enable real time network communication. If set to ```False``` you will be unable to listen on the [EXP network](# Communicating on the EXP Network).
 
 
-
-# Communicating on the EXP Network
+# The EXP Network
 
 The EXP network facilitates real time communication between entities connected to EXP. A user or device can broadcast a JSON serializable payload to users and devices in your organization, and listeners to those broadcasts can respond to the broadcasters.
 
@@ -212,18 +199,18 @@ while True:
 
 ## Channels
 - ```channel = exp.get_channel(name, system=False, consumer=False)```: Get a channel by name.
-- ```responses = channel.broadcast(name, payload=None, timeout=0):``` Send a broadcast on this channel, with name ```name``` and JSON serializable payload ```payload```. Wait for ```timeout``` seconds for responses. ```responses``` will be a list of JSON serializable objects, one item per response is order the response was received.
-- ```listener = channel.listen(name)```: Listen for messages with name ```name``` on the given channel. Returns a [Listener](#listener) after the listener has been registered internally and can receive events.
-
+- ```responses = channel.broadcast(name, payload=None, timeout=0):``` Send a broadcast on this channel, with string ```name``` and JSON serializable type ```payload```. Wait for ```timeout``` seconds for responses. Returns a list of the responses.
+- ```listener = channel.listen(name)```: Listen for messages with name ```name``` on the given channel. Returns a [Listener](#listener).
 
 
 ## Listener
-- ```listener.cancel()```: Permanently detach the listener. Cannot be undone.
-- ```broadcast = listener.wait(timeout=0)```: Block for broadcasts for ```timeout``` seconds.  Any broadcasts received by the listener when not waiting are queued. If there is a broadcast in the queue, the oldest broadcast will be consumed and returned immediately when ```wait``` is called. If no broadcasts are queued and none are received in ```timeout``` seconds, ```wait``` returns ```None```.
+- ```listener.cancel()```: Permanently detach the listener.
+- ```broadcast = listener.wait(timeout=0)```: Block for broadcasts for ```timeout``` seconds. Returns a [broadcast](#broadcasts) or ```None```.
 
-## Broadcast
-- ```broadcast.payload```: The payload of the broadcast. Always JSON serializable type.
-- ```broadcast.respond(payload)```: Respond to the broadcast. ```payload``` is a JSON serializable response to send back to the broadcaster.
+
+## Broadcasts
+- ```broadcast.payload```: The payload of the broadcast.
+- ```broadcast.respond(payload)```: Respond to the broadcast. ```payload``` must be a JSON serializable.
 
 
 
@@ -235,4 +222,34 @@ The following methods make custom API calls that include authentication. Use for
 - ```document = exp.patch(path, payload=None, params=None)```
 - ```document = exp.put(path, payload=None, params=None)```
 - ```exp.delete(path, params)```
+
+
+
+
+# Examples
+
+## Creating a Device and Listening for Updates
+
+Updates to API resources are sent out over a system channel with the event name "update".
+
+```python
+  device = exp.create_device({ 'name': 'my_sweet_device' })
+  device.save()
+  channel = device.get_channel(system=True)
+  listener = channel.listen('update')
+  while True:
+    if listener.wait(5):
+      print 'The device was updated!'
+  
+```
+
+
+## Modifying a Resource in Place
+
+```python
+experience = exp.get_experience('[uuid]')
+experience.document['name'] = 'new name'
+experience.save()
+```
+
 
