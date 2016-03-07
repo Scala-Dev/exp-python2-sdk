@@ -201,8 +201,19 @@ while True:
 - ```zone.get_channel(system=False, consumer=False)```: Get a [channel](#Channels) for communication about this zone.
 
 ## Content
+- ```content = exp.get_content(uuid)```: Retrieves a content resource by uuid.
+- ```content_list = exp.find_content(params)```: Returns a list of content using the given query params.
+- ```content.get_url()```: Returns a delivery URL for content retrieval.
+- ```content.get_variant_url()```: Returns a delivery URL for a variant of the content.
+- ```content.children```: A list of child content resources.
+- ```content.subtype```: The content subtype. See the API docs.
 
 ## Feeds
+- ```feed = exp.get_feed(uuid)```: Retrieves a feed resource by uuid.
+- ```feeds = exp.find_feeds(params)```: Get a list of feeds given a dictionary of query params. See the API docs.
+- ```feed = exp.create_feed(document)```: Create and save a new feed from a feed document.
+- ```feed.get_data()```: Get the feeds data.
+
 
 ## Channels
 - ```channel = exp.get_channel(name, system=False, consumer=False)```: Get a channel by name.
