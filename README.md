@@ -1,14 +1,8 @@
 
 
-# Starting the SDK
+# Getting Started
 
-The SDK is started by calling ```exp.start``` and specifying your credentials and configuration options as keyword arguments. ```exp.start``` will start additional threads to process network events. You may supply user, device, or consumer app credentials. You can also authenticate in pairing mode.
-
-When ```exp.start``` returns, you are authenticated and can begin using the SDK. 
-
-
-
-## User Credentials
+The SDK is started by calling ```exp.start``` and specifying your credentials and configuration options as keyword arguments. ```exp.start``` will start additional threads to process network events. You may supply user, device, or consumer app credentials. You can also authenticate in pairing mode. When ```exp.start``` returns, you are authenticated and can begin using the SDK. 
 
 Users must specify their ```username```, ```password```, and ```organization``` as keyword arguments to ```exp.start```.
 
@@ -19,8 +13,6 @@ exp.start(username='joe@joemail.com', password='JoeRocks42', organization='joeso
 
 ```
 
-## Device Credentials
-
 Devices must specify their ```uuid``` and ```secret``` as keyword arguments.
 
 ```python
@@ -29,8 +21,6 @@ import exp
 exp.start(uuid='[uuid]', secret='[secret]')
 
 ```
-
-## Consumer App Credentials
 
 Consumer apps must specify their ```uuid``` and ```api_key``` as keyword arguments.
 
@@ -41,8 +31,6 @@ exp.start(uuid='[uuid]', api_key='[api key]')
 
 ```
 
-## Pairing Mode
-
 Advanced users can authenticate in pairing mode by setting ```allow_pairing``` to ```False```.
 
 ```python
@@ -52,19 +40,12 @@ exp.start(allow_pairing=False)
 
 ```
 
-
-## Additional Options
+Additional options:
 
 Name | Default | Description
 --- | --- | ---
 host | ```'https://api.goexp.io'``` | The api server to authenticate with.
 enable_network | ```True``` | Whether to enable real time network communication. If set to ```False``` you will be unable to listen on the [EXP network](# Communicating on the EXP Network).
-
-### Exceptions
-
-If the arguments specified to ```exp.start``` are invalid or incomplete an ```exp.RuntimeError``` will be raised.
-
-
 
 
 
@@ -162,36 +143,39 @@ while True:
 
 ## Devices
 
-- ```device = exp.get_device(uuid)```: Get a device by uuid.
-- ```device = exp.create_device(document)```: Create (and save) a device given a device document, a dictionary.
-- ```devices = exp.find_devices(params)```: Get a list of devices given a dictionary of query parameters. See the API docs.
+- ```device = exp.get_device(uuid)```: Retrieves a device by uuid.
+- ```device = exp.create_device(document)```: Creates a device from a dictionary.
+- ```devices = exp.find_devices(params)```: Retrieves a list of devices given a dictionary of query parameters. See the API docs.
 - ```device.uuid```: The device's uuid.
-- ```device.document```: The underlying device's document, a dictionary.
-- ```device.get_channel(system=False, consumer=False)```: Get a [channel](#Channels) for communication about this device. 
+- ```device.document```: The device's underlying document, a dictionary.
+- ```device.save()```: Saves the device to EXP.
+- ```device.get_channel(system=False, consumer=False)```: Retrieves a [channel](#Channels) for communication about the device. 
 
 ## Things
-- ```thing = exp.get_thing(uuid)```: Get a thing by uuid.
-- ```thing = exp.create_thing(document)```: Create (and save) a thing given a thing document, a dictionary.
-- ```thing = exp.find_things(params)```: Get a list of things given a dictionary of query parameters. See the API docs.
+- ```thing = exp.get_thing(uuid)```: Retrieves a thing by uuid.
+- ```thing = exp.create_thing(document)```: Creates a thing from a dictionary.
+- ```thing = exp.find_things(params)```: Retrieves a list of things given a dictionary of query parameters. See the API docs.
 - ```thing.uuid```: The thing's uuid.
-- ```thing.document```: The underlying thing's document, a dictionary.
-- ```thing.get_channel(system=False, consumer=False)```: Get a [channel](#Channels) for communication about this thing. 
+- ```thing.document```: The thing's underying document, a dictionary.
+- ```thing.save()```: Saves the thing to EXP.
+- ```thing.get_channel(system=False, consumer=False)```: Retrieves a [channel](#Channels) for communication about the thing. 
 
 ## Experiences
-- ```experience = exp.get_experience(uuid)```: Get an experience by uuid.
-- ```experience = exp.create_experience(document)```: Create and save  new experience from document.
-- ```experiences = exp.find_experiences(params)```: Get a list of experiences given a dictionary of query params. See the API docs.
+- ```experience = exp.get_experience(uuid)```: Retrieves an experience by uuid.
+- ```experience = exp.create_experience(document)```: Creates an experience from a dictionary.
+- ```experiences = exp.find_experiences(params)```: Retrieves a list of experiences given a dictionary of query params. See the API docs.
 - ```experience.uuid```: The experience's uuid.
-- ```experience.document```: The underlying experience's document, a dictionary.
+- ```experience.document```: The experience's underlying document, a dictionary.
+- ```experience.save()```: Saves the experience to EXP.
 - ```experience.get_channel(system=False, consumer=False)```: Get a [channel](#Channels) for communication about this experience.
 
 
 ## Locations
-- ```location = exp.get_location(uuid)```: Get a location by uuid.
-- ```location = exp.create_location(document)```: Create and save  new experience from document.
-- ```locations = exp.find_locations(params)```: Get a list of locations given a dictionary of query params. See the API docs.
+- ```location = exp.get_location(uuid)```: Retrieves a location by uuid.
+- ```location = exp.create_location(document)```: Creates a location from a dictionary.
+- ```locations = exp.find_locations(params)```: Retrieves a list of locations given a dictionary of query params. See the API docs.
 - ```location.uuid```: The locations's uuid.
-- ```location.document```: The underlying experience document, a dictionary.
+- ```location.document```: The location's underlying document, a dictionary.
 - ```location.get_channel(system=False, consumer=False)```: Get a [channel](#Channels) for communication about this location.
 - ```location.get_zones()```: Get a list of [zones](#Zones) that are part of this location.
 
@@ -206,14 +190,25 @@ while True:
 - ```content.get_url()```: Returns a delivery URL for content retrieval.
 - ```content.get_variant_url()```: Returns a delivery URL for a variant of the content.
 - ```content.children```: A list of child content resources.
+- ```content.document```: The underlying zone's document, a dictionary.
 - ```content.subtype```: The content subtype. See the API docs.
 
 ## Feeds
 - ```feed = exp.get_feed(uuid)```: Retrieves a feed resource by uuid.
 - ```feeds = exp.find_feeds(params)```: Get a list of feeds given a dictionary of query params. See the API docs.
 - ```feed = exp.create_feed(document)```: Create and save a new feed from a feed document.
-- ```feed.get_data()```: Get the feeds data.
+- ```feed.document```: The underlying feed's document, a dictionary.
+- ```feed.get_data()```: Get the feed's data.
 
+
+## Data
+- ```data = exp.get_data(key, group='default')```: Retrieves data by key and group.
+- ```data = exp.find_data(params)```: Retrieves a list of data given a dictionary of query params. See the API docs.
+- ```data = exp.create_data(key, value, group='default')```: 
+- ```data.save()```: Saves the data.
+- ```data.value```: The value of the data, a JSON serializable type.
+- ```data.key```: The data's key.
+- ```data.group```: The data's group.
 
 ## Channels
 - ```channel = exp.get_channel(name, system=False, consumer=False)```: Get a channel by name.
