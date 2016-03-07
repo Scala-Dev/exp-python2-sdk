@@ -1,15 +1,14 @@
 
 
+# Starting the SDK
+
+The SDK is started by calling ```exp.start``` and specifying your credentials and configuration options as keyword arguments. ```exp.start``` will start additional threads to process network events. You may supply user, device, or consumer app credentials. You can also authenticate in pairing mode.
+
+When ```exp.start``` returns, you are authenticated and can begin using the SDK. 
 
 
 
-# [Starting the SDK](#runtime)
-
-The SDK is started by calling ```exp.start``` and specifying your credentials and configuration options as keyword arguments. ```exp.start``` will start some background processes that keep you authenticated and process network events. You must supply credentials to ```exp.start```. You can supply user, device, or consumer app credentials. You can also authenticate in pairing mode.
-
-When ```exp.start``` returns, you are authenticated and (optionally) connected to the EXP network. The SDK is non blocking and will stop when your main script finishes.
-
-## Using User Credentials
+## User Credentials
 
 Users must specify their ```username```, ```password```, and ```organization``` as keyword arguments to ```exp.start```.
 
@@ -20,7 +19,7 @@ exp.start(username='joe@joemail.com', password='JoeRocks42', organization='joeso
 
 ```
 
-### Using Device Credentials
+## Device Credentials
 
 Devices must specify their ```uuid``` and ```secret``` as keyword arguments.
 
@@ -31,7 +30,7 @@ exp.start(uuid='[uuid]', secret='[secret]')
 
 ```
 
-### Using Consumer App Credentials
+## Consumer App Credentials
 
 Consumer apps must specify their ```uuid``` and ```api_key``` as keyword arguments.
 
@@ -42,7 +41,7 @@ exp.start(uuid='[uuid]', api_key='[api key]')
 
 ```
 
-### Pairing Mode
+## Pairing Mode
 
 Advanced users can authenticate in pairing mode by setting ```allow_pairing``` to ```False```.
 
@@ -63,82 +62,7 @@ enable_network | ```True``` | Whether to enable real time network communication.
 
 ### Exceptions
 
-If the SDK is already running an ```exp.RuntimeError``` will be raised. If the arguments specified to ```exp.start``` are invalid an ```exp.OptionsError``` will be raised.
-
-
-
-# exp.runtime
-
-## exp.start()
-The SDK must be initialized by calling ```exp.start()``` and passing in configuration options. This starts the event bus and automatically authenticates API calls. The start command will block until a connection is first established. 
-
-```python
-# Authenticate with username and password.
-exp.start(
-  username="joe@exp.com",
-  password="joesmoe25",
-  organization="exp")
-# Authenticate with device uuid and secret.
-exp.start(uuid="[uuid]", secret="[secret]")
-# Authenticate with consumer app uuid and api key.
-exp.start(uuid="[uuid]", apiKey="[apiKey]")
-```
-
-## exp.runtime.stop()
-A socket connection is made to EXP that is non-blocking. To end the connection and to stop threads spawned by the SDK call ```exp.runtime.stop()```.
-
-## exp.runtime.on()
-
-Can listen for when the event bus is online/offline. Triggers an asynchronous callback.
-
-```python
-def on_online():
-  print "Online!"
-def on_offline():
-  print "Offline!"
-exp.runtime.on("online", callback=on_online)
-exp.runtime.on("offline", callback=on_offline)
-```
-
-# exp.api
-API abstraction layer.
-
-## Example
-```python
-devices = exp.api.find_devices(**params)  # Query for device objects (url params).
-device = exp.api.get_device(uuid)  # Get device by UUID.
-device = exp.api.create_device(document)  # Create a device from a dictionary
-```
-Other available namespaces: experiences, locations, content, data. content does not currently support creation, only "get_content(uuid) and find_content(params)".
-
-# Interacting with API Resources
-
-## API Resources
-Each resource object contains a "document" field which is a dictionary representation of the raw resource, along with "save" and "delete" methods.
-```python
-device = exp.api.create_device({ "field": value })
-device.document["field"] = 123
-device.save()
-print device.document["field"]
-device.delete()
-```
-
-
-```python
-data = exp.api.get_data("key1", "group0")
-print data.value
-data.value = { "generic": 1111 }
-data.save()
-data.delete()
-
-data = exp.api.create_data(key="4", group="cats", { "name": "fluffy" })
-
-```
-
-The "content" resource has a ```get_children()``` method that returns the content's children (a list of content objects). Every content object also has a ```get_url()``` and ```get_variant_url(name)``` method that returns a delivery url for the content.
-
-The "feed" resource has a ```get_data()``` method that returns a the feed's decoded JSON document.
-
+If the arguments specified to ```exp.start``` are invalid or incomplete an ```exp.RuntimeError``` will be raised.
 
 
 
@@ -178,11 +102,11 @@ responses = channel.broadcast(name='my_event', timeout=5, payload='hello')
 
 ### Listening
 
-To listen for broadcasts, call the listen method of a channel object and pass in the name of the event you wish to listen for. When EXP registers you to listen on the desired channel, a ```listener``` object will be returned. 
+To listen for broadcasts, call the listen method of a channel object and pass in the name of the event you wish to listen for. When EXP listener has been registered and can start receiving events, a ```listener``` object will be returned. 
 
-Call the ```wait``` method of a listener to block until a broadcast is received.
+Call the ```wait``` method of a listener to block until a broadcast is received, passing in a timeout in seconds. If ```timeout``` elaspes and no broadcasts have been received, ```wait``` will return ```None```.
 
-
+Once a listener is created, it will receive broadcasts in a background thread even when not waiting. Calling ```wait``` will first attempt to return the oldest broadcast in the queue. Queued broadcasts will be discarded after ~60s if not retrieved during a ```wait```.
 
 ```python
 
@@ -198,8 +122,6 @@ while True:
     break
 
 ```
-
-Broadcasts that come in while not waiting on the listener will be queued.
 
 
 ### Responding
@@ -220,6 +142,65 @@ while True:
 ```
 
 
+# SDK Resources
+
+EXP API resources are represented by abstract objects.
+
+
+
+
+# SDK Reference
+
+exp.start(**kwargs)
+exp.get_channel(name, system=False, consumer=False)
+
+exp.get_device(uuid)
+exp.create_device(document)
+exp.find_devices(**params)
+
+exp.get_experience(uuid)
+
+
+
+
+# exp.api
+API abstraction layer.
+
+## Example
+```python
+devices = exp.api.find_devices(**params)  # Query for device objects (url params).
+device = exp.api.get_device(uuid)  # Get device by UUID.
+device = exp.api.create_device(document)  # Create a device from a dictionary
+```
+Other available namespaces: experiences, locations, content, data. content does not currently support creation, only "get_content(uuid) and find_content(params)".
+
+# Interacting with API Resources
+
+## API Resources
+Each resource object contains a "document" field which is a dictionary representation of the raw resource, along with "save" and "delete" methods.
+```python
+device = exp.api.create_device({ "field": value })
+device.document["field"] = 123
+device.save()
+print device.document["field"]
+device.delete()
+```
+
+
+```python
+data = exp.api.get_data("key1", "group0")
+print data.value
+data.value = { "generic": 1111 }
+data.save()
+data.delete()
+
+data = exp.api.create_data(key="4", group="cats", { "name": "fluffy" })
+
+```
+
+The "content" resource has a ```get_children()``` method that returns the content's children (a list of content objects). Every content object also has a ```get_url()``` and ```get_variant_url(name)``` method that returns a delivery url for the content.
+
+The "feed" resource has a ```get_data()``` method that returns a the feed's decoded JSON document.
 
 
 
