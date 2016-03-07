@@ -141,66 +141,83 @@ while True:
 
 ```
 
-
-# SDK Resources
-
-EXP API resources are represented by abstract objects.
-
-
-
-
 # SDK Reference
 
-exp.start(**kwargs)
-exp.get_channel(name, system=False, consumer=False)
 
-exp.get_device(uuid)
-exp.create_device(document)
-exp.find_devices(**params)
+## Startup
+```exp.start(username=None, password=None, uuid=None, secret=None, api_key=None, enable_network=True, host='https://api.goexp.io', allow_pairing=False)```: Start the SDK with the given set of options. See [Starting the SDK](#starting-the-sdk).
 
-exp.get_experience(uuid)
+## Exceptions
+
+- ```exp.ExpError```: Base class for errors raised by the SDK.
+- ```exp.AuthenticationError```: Raised when SDK cannot authenticate.
+- ```exp.RuntimeError```: Raised when options pass to ```exp.start``` are invalid or inconsistent. 
+- ```exp.HttpError```: Raised when an API request encouters and error. This exception has the following attributes:
+  - ```code```: The API REST code of the error.
+  - ```status```: The HTTP status code received.
+  - ```message```: A human readable description of the encountered error.
+- ```exp.UnexpectedError```: Raised when an SDK method encounters an unexpected exception.
+
+## Devices
+
+- ```device = exp.get_device(uuid)```: Get a device by uuid.
+- ```device = exp.create_device(document)```: Create (and save) a device given a device document, a dictionary.
+- ```devices = exp.find_devices(params)```: Get a list of devices given a dictionary of query parameters. See the API docs.
+- ```device.uuid```: The device's uuid.
+- ```device.document```: The underlying device's document, a dictionary.
+- ```device.get_channel(system=False, consumer=False)```: Get a [channel](#Channels) for communication about this device. 
+
+## Things
+- ```thing = exp.get_thing(uuid)```: Get a thing by uuid.
+- ```thing = exp.create_thing(document)```: Create (and save) a thing given a thing document, a dictionary.
+- ```thing = exp.find_things(params)```: Get a list of things given a dictionary of query parameters. See the API docs.
+- ```thing.uuid```: The thing's uuid.
+- ```thing.document```: The underlying thing's document, a dictionary.
+- ```thing.get_channel(system=False, consumer=False)```: Get a [channel](#Channels) for communication about this thing. 
+
+# Experiences
+- ```experience = exp.get_experience(uuid)```: Get an experience by uuid.
+- ```experience = exp.create_experience(document)```: Create and save  new experience from document.
+- ```experiences = exp.find_experiences(params)```: Get a list of experiences given a dictionary of query params. See the API docs.
+- ```experience.uuid```: The experience's uuid.
+- ```experience.document```: The underlying experience's document, a dictionary.
+- ```experience.get_channel(system=False, consumer=False)```: Get a [channel](#Channels) for communication about this experience.
+- 
+# Locations
+- ```location = exp.get_location(uuid)```: Get a location by uuid.
+- ```location = exp.create_location(document)```: Create and save  new experience from document.
+- ```locations = exp.find_locations(params)```: Get a list of locations given a dictionary of query params. See the API docs.
+- ```location.uuid```: The locations's uuid.
+- ```location.document```: The underlying experience document, a dictionary.
+- ```location.get_channel(system=False, consumer=False)```: Get a [channel](#Channels) for communication about this location.
+- ```location.get_zones()```: Get a list of [zones](#Zones) that are part of this location.
+
+
+# Zones
+- ```zone.document```: The underlying zone's document, a dictionary.
+- ```zone.get_channel(system=False, consumer=False)```: Get a [channel](#Channel) for communication about this zone.
+
+# Content
+
+# Feeds
+
+# Channel
+- ```channel = exp.get_channel(name, system=False, consumer=False)```: Get a channel by name.
+- ```responses = channel.broadcast(name, payload=None, timeout=0):``` Send a broadcast on this channel, with name ```name``` and JSON serializable payload ```payload```. Wait for ```timeout``` seconds for responses. ```responses``` will be a list of JSON serializable objects, one item per response is order the response was received.
+- ```listener = channel.listen(name)```: Listen for messages with name ```name``` on the given channel. Returns a [Listener](#listener) after the listener has been registered internally and can receive events.
 
 
 
+##Listener
+- ```listener.cancel()```: Permanently detach the listener. Cannot be undone.
+- ```broadcast = listener.wait(timeout=0)```: Block for broadcasts for ```timeout``` seconds.  Any broadcasts received by the listener when not waiting are queued. If there is a broadcast in the queue, the oldest broadcast will be consumed and returned immediately when ```wait``` is called. If no broadcasts are queued and none are received in ```timeout``` seconds, ```wait``` returns ```None```.
 
-# exp.api
-API abstraction layer.
-
-## Example
-```python
-devices = exp.api.find_devices(**params)  # Query for device objects (url params).
-device = exp.api.get_device(uuid)  # Get device by UUID.
-device = exp.api.create_device(document)  # Create a device from a dictionary
-```
-Other available namespaces: experiences, locations, content, data. content does not currently support creation, only "get_content(uuid) and find_content(params)".
-
-# Interacting with API Resources
-
-## API Resources
-Each resource object contains a "document" field which is a dictionary representation of the raw resource, along with "save" and "delete" methods.
-```python
-device = exp.api.create_device({ "field": value })
-device.document["field"] = 123
-device.save()
-print device.document["field"]
-device.delete()
-```
+# Broadcast
+- ```broadcast.payload```: The payload of the broadcast. Always JSON serializable type.
+- ```broadcast.respond(payload)```: Respond to the broadcast. ```payload``` is a JSON serializable response to send back to the broadcaster.
 
 
-```python
-data = exp.api.get_data("key1", "group0")
-print data.value
-data.value = { "generic": 1111 }
-data.save()
-data.delete()
 
-data = exp.api.create_data(key="4", group="cats", { "name": "fluffy" })
-
-```
-
-The "content" resource has a ```get_children()``` method that returns the content's children (a list of content objects). Every content object also has a ```get_url()``` and ```get_variant_url(name)``` method that returns a delivery url for the content.
-
-The "feed" resource has a ```get_data()``` method that returns a the feed's decoded JSON document.
 
 
 
