@@ -144,8 +144,10 @@ while True:
 # SDK Reference
 
 
-## Startup
-```exp.start(username=None, password=None, uuid=None, secret=None, api_key=None, enable_network=True, host='https://api.goexp.io', allow_pairing=False)```: Start the SDK with the given set of options. See [Starting the SDK](#starting-the-sdk).
+## Runtime
+- ```exp.start(username=None, password=None, uuid=None, secret=None, api_key=None, enable_network=True, host='https://api.goexp.io', allow_pairing=False)```: Start the SDK with the given set of options. See [Starting the SDK](#starting-the-sdk).
+- ```exp.get_auth()```: Returns the raw dictionary returned by the server during authentication.
+- ```exp.get_connectction_status()```: Returns ```True``` or ```False``` dependending on whether the network connection is active.
 
 ## Exceptions
 
@@ -175,15 +177,16 @@ while True:
 - ```thing.document```: The underlying thing's document, a dictionary.
 - ```thing.get_channel(system=False, consumer=False)```: Get a [channel](#Channels) for communication about this thing. 
 
-# Experiences
+## Experiences
 - ```experience = exp.get_experience(uuid)```: Get an experience by uuid.
 - ```experience = exp.create_experience(document)```: Create and save  new experience from document.
 - ```experiences = exp.find_experiences(params)```: Get a list of experiences given a dictionary of query params. See the API docs.
 - ```experience.uuid```: The experience's uuid.
 - ```experience.document```: The underlying experience's document, a dictionary.
 - ```experience.get_channel(system=False, consumer=False)```: Get a [channel](#Channels) for communication about this experience.
-- 
-# Locations
+
+
+## Locations
 - ```location = exp.get_location(uuid)```: Get a location by uuid.
 - ```location = exp.create_location(document)```: Create and save  new experience from document.
 - ```locations = exp.find_locations(params)```: Get a list of locations given a dictionary of query params. See the API docs.
@@ -193,32 +196,37 @@ while True:
 - ```location.get_zones()```: Get a list of [zones](#Zones) that are part of this location.
 
 
-# Zones
+## Zones
 - ```zone.document```: The underlying zone's document, a dictionary.
-- ```zone.get_channel(system=False, consumer=False)```: Get a [channel](#Channel) for communication about this zone.
+- ```zone.get_channel(system=False, consumer=False)```: Get a [channel](#Channels) for communication about this zone.
 
-# Content
+## Content
 
-# Feeds
+## Feeds
 
-# Channel
+## Channels
 - ```channel = exp.get_channel(name, system=False, consumer=False)```: Get a channel by name.
 - ```responses = channel.broadcast(name, payload=None, timeout=0):``` Send a broadcast on this channel, with name ```name``` and JSON serializable payload ```payload```. Wait for ```timeout``` seconds for responses. ```responses``` will be a list of JSON serializable objects, one item per response is order the response was received.
 - ```listener = channel.listen(name)```: Listen for messages with name ```name``` on the given channel. Returns a [Listener](#listener) after the listener has been registered internally and can receive events.
 
 
 
-##Listener
+## Listener
 - ```listener.cancel()```: Permanently detach the listener. Cannot be undone.
 - ```broadcast = listener.wait(timeout=0)```: Block for broadcasts for ```timeout``` seconds.  Any broadcasts received by the listener when not waiting are queued. If there is a broadcast in the queue, the oldest broadcast will be consumed and returned immediately when ```wait``` is called. If no broadcasts are queued and none are received in ```timeout``` seconds, ```wait``` returns ```None```.
 
-# Broadcast
+## Broadcast
 - ```broadcast.payload```: The payload of the broadcast. Always JSON serializable type.
 - ```broadcast.respond(payload)```: Respond to the broadcast. ```payload``` is a JSON serializable response to send back to the broadcaster.
 
 
 
 
-
-
+## Custom API Calls
+The following methods make custom API calls that include authentication. Use for API calls that aren't supported by the SDK. ```params``` is specified as a dictionary of query params and ```payload``` must be a JSON serializable type. With the exception of DELETE, these requests will return the parsed JSON response.
+- ```document = exp.get(path, params=None)```
+- ```document = exp.post(path, payload=None, params=None)```
+- ```document = exp.patch(path, payload=None, params=None)```
+- ```document = exp.put(path, payload=None, params=None)```
+- ```exp.delete(path, params)```
 
