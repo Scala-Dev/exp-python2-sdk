@@ -4,7 +4,7 @@ import string
 import threading
 import time
 
-class Test (utils.Device):
+class Test1 (utils.Device):
 
   def test_simple_message_pattern (self):
     channel = self.exp.get_channel('test_channel')
@@ -15,7 +15,7 @@ class Test (utils.Device):
       raise
 
 
-class Test(utils.Base):
+class Test2 (utils.Base):
 
   def test_responding (self):
     exp1 = self.exp_sdk.start(**self.consumer_credentials)
@@ -36,3 +36,7 @@ class Test(utils.Base):
     broadcast = self.listener.wait(60)
     if broadcast.payload['a'] == 1:
       broadcast.respond({ 'b': 2 })
+
+
+  def test_listener_cancelling (self):
+    pass  # TODO
