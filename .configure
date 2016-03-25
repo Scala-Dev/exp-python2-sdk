@@ -1,0 +1,6 @@
+export EXP_USERNAME=email@email.com
+export EXP_PASSWORD=Password12321
+export EXP_ORGANIZATION=scala
+export EXP_HOST=http://localhost:9000
+export EXP_DEVICE_UUID=bbb91e7f-0869-46e6-8afd-e0161d5d35ca
+export EXP_SECRET=d221547725fd41f0242c0b85c1e7cff514a9d51764a973e2f7abb027ea62bcf2e8b73499c5626cb5b20339998ea4f060

@@ -2,59 +2,56 @@ import time
 import threading
 import uuid
 
-from .logger import logger
 
 import urlparse
 from socketIO_client import SocketIO, BaseNamespace
 import json
 import base64
 
-from . import api_utils
-
 import traceback
-
-from .authenticator import authenticator
-
 
 
 class _Broadcast (object):
 
-  _path = '/api/networks/current/response'
-
-  def __init__(self, message):
+  def __init__(self, sdk, message):
+    self._sdk = sdk
     self._message = message
-    self._time = int(time.time())
+    self.time = int(time.time())
 
   @property
   def payload(self):
     return self._message['payload']
 
-  def respond(self, payload):
-    response = { 'id': self._message['id'], 'channel': self._message['channel'], 'payload': payload }
-    return api_utils.post(self._path, response)
+  def respond(self, response):
+    self._sdk.api.post('/api/networks/current/responses', {'id': self._message['id'], 'channel': self._message['channel'], 'payload': response })
 
 
 class _Listener (object):
 
-  def __init__(self, namespace, max_age=60):
+  def __init__(self, namespace, sdk, max_age=60, **kwargs):
     self._namespace = namespace
+    self._sdk = sdk
     self._max_age = max_age
     self._event = threading.Event()
     self._broadcasts = []
 
-  def _receive (self, message):
-    broadcast = _Broadcast(message)
+  def _prune (self):
     now = int(time.time())
-    self._broadcasts = [broadcast for broadcast in self._broadcasts if now - broadcast._time < self._max_age]
-    self._broadcasts.append(broadcast)
+    self._broadcasts = [broadcast for broadcast in self._broadcasts if now - broadcast.time < self._max_age]
+
+  def receive (self, message):
+    self._prune()
+    self._broadcasts.append(_Broadcast(self._sdk, message))
     self._event.set()
 
-  def wait (self, timeout=None):
+  def wait (self, timeout=0, **kwargs):
+    self._prune()
     if not self._broadcasts:
       self._event.clear()
       self._event.wait(timeout)
     if self._broadcasts:
-      return self._broadcasts.pop(0)
+      broadcast = self._broadcasts.pop(0)
+      return broadcast
 
   def cancel(self):
     self._namespace.cancel_listener(self)
@@ -62,11 +59,12 @@ class _Listener (object):
 
 class _Namespace (object):
 
-  def __init__(self):
+  def __init__(self, sdk):
     self._listeners = []
+    self._sdk = sdk
 
   def listen (self, **kwargs):
-    listener = _Listener(self, **kwargs)
+    listener = _Listener(self, self._sdk, **kwargs)
     self._listeners.append(listener)
     return listener
 
@@ -75,7 +73,7 @@ class _Namespace (object):
       self._listeners.remove(listener)
 
   def receive (self, message):
-    [listener._receive(message) for listener in self._listeners]
+    [listener.receive(message) for listener in self._listeners]
 
   @property
   def has_listeners (self):
@@ -84,32 +82,33 @@ class _Namespace (object):
 
 class _Channel (object):
 
-  def __init__ (self, id):
+  def __init__ (self, id, sdk):
     self._id = id
+    self._sdk = sdk
     self._namespaces = {}
-    self._subscription = threading.Event()
+    self.subscription = threading.Event()
 
-  def broadcast (self, name, payload=None, timeout=5):
+  def broadcast (self, name, payload=None, timeout=0.1):
     path = '/api/networks/current/broadcasts'
-    message = {'channel': self._id, 'name': name, 'payload': payload}
-    params = {'timeout': timeout}
-    return api_utils.post(path, message, params)
+    payload = {'channel': self._id, 'name': name, 'payload': payload}
+    params = {'timeout': timeout * 1000 }
+    return self._sdk.api.post(path, payload, params)
 
   def listen (self, name, **kwargs):
     if not self._namespaces.get(name):
-      self._namespaces[name] = _Namespace()
+      self._namespaces[name] = _Namespace(self._sdk)
     listener = self._namespaces[name].listen(**kwargs)
-    if not self._subscription.is_set():
-      socket.emit('subscribe', [self._id])
-    self._subscription.wait()
+    if not self.subscription.is_set():
+      self._sdk.network.emit('subscribe', [self._id])
+    self.subscription.wait()
     return listener
 
-  def _receive (self, message):
+  def receive (self, message):
     if message['name'] in self._namespaces:
       self._namespaces[message['name']].receive(message)
 
   @property
-  def _has_listeners (self):
+  def has_listeners (self):
     return any([namespace.has_listeners for name, namespace in self._namespaces.iteritems()])
 
 
@@ -120,169 +119,183 @@ class _Channel (object):
 
 
 
-class _Network (object):
+class Network (object):
 
-  def __init__(self):
+  def __init__(self, sdk):
+    self._sdk = sdk
     self._channels = {}
     self._auth = None
-    self._options = None
-    self._parent = threading.currentThread()
-    self._thread = None
-    self._lock = threading.Lock()
-    self._is_started = False
-
-  def start (self):
-    self._lock.aquire()
-    if self._is_started:
-      return
-    self._is_started = True
+    self._socket = None
+    self._abort = False
     self._parent = threading.currentThread()
     self._thread = threading.Thread(target=lambda: self._main_event_loop())
-    self._thread.start()
-    self._lock.release()
+    self._lock = threading.Lock()
 
-  def configure (self, **options):
-    self._lock.acquire()
-    self._auth = None
-    self._options = options
-    self._lock.release()
+  def start (self):
+    self._thread.start()
+
+  def stop (self):
+    self._abort = True
 
   def get_channel(self, name, system=False, consumer=False):
     channel_id = self._generate_channel_id(name, system, consumer)
-    return self.get_channel_by_id(channel_id)
+    channel = self._get_channel_by_id(channel_id)
+    return channel
 
-  def get_channel_by_id (self, channel_id):
+  def emit (self, name, payload):
+    if not self._socket:
+      return False
+    return self._socket.emit(name, payload)
+
+  def _get_channel_by_id (self, channel_id):
     if channel_id not in self._channels:
-      self._channels[channel_id] = _Channel(channel_id)
+      self._channels[channel_id] = _Channel(channel_id, self._sdk)
     return self._channels[channel_id]
 
-  @staticmethod
-  def _generate_channel_id (name, system=False, consumer=False):
-    organization = authenticator.get_auth()['identity']['organization']
+  def _generate_channel_id (self, name, system=False, consumer=False):
+    organization = self._sdk.authenticator.get_auth()['identity']['organization']
     raw_id = [organization, name, 1 if system else 0, 1 if consumer else 0]
     json_id = json.dumps(raw_id, separators=(',', ':'))
     return base64.b64encode(json_id)
 
-  """ Callbacks on socket events """
+  def on_connect(self, socket):
+    if socket != self._socket:
+      return
+    [channel.subscription.clear() for id, channel in self._channels.iteritems()]
+    self._socket.emit('subscribe', [id for id, channel in self._channels.iteritems() if channel.has_listeners])
 
-  def on_connect(self):
-    ids = [id for id, channel in self._channels.iteritems() if channel._has_listeners]
-    socket.emit('subscribe', ids)
+  def on_disconnect(self, socket):
+    if socket != self._socket:
+      return
+    [channel.subscription.clear() for id, channel in self._channels.iteritems()]
 
-  def on_disconnect(self):
-    [channel._subscription.clear() for id, channel in self._channels.iteritems()]
+  def on_subscribed(self, socket, ids):
+    if socket != self._socket:
+      return
+    [self._get_channel_by_id(id).subscription.set() for id in ids]
 
-  def on_subscribed(self, ids):
-    [self.get_channel_by_id(id)._subscription.set() for id in ids]
-
-  def on_broadcast (self, message):
-    self.get_channel_by_id(message['channel'])._receive(message)
+  def on_broadcast (self, socket, message):
+    if socket != self._socket:
+      return
+    self._get_channel_by_id(message['channel']).receive(message)
 
 
   def _main_event_loop (self):
 
     while True:
 
-      self._lock.acquire()
+      """ If parent thread is dead or network is inactive, disconnect and break thread. """
+      if not self._parent.is_alive() or self._abort:
+        if self._socket:
+          self._socket.stop()
+          self._socket = None
+        break
 
-      """ If network is not enabled or options aren't set, disconnect and wait. """
-      if not self._options or not self._options['enable_network']:
-        socket.disconnect()
-        self._lock.release()
-        time.sleep(1)
-        continue
-
-      """ If parent thread is dead, disconnect and break event loop. """
-      if self._parent and not self._parent.is_alive():
-        socket.disconnect()
-        self._lock.release()
-        break;
-
-      """ Attempt to retrieve current auth. If auth has changed, reconnect. """
+      """ Attempt to retrieve current auth. """
       try:
-        auth = authenticator.get_auth()
-        if auth != self._auth:
-          self._auth = auth
-          socket.connect(**self._auth)
+        auth = self._sdk.authenticator.get_auth()
       except Exception:
-        socket.disconnect()
-        self._lock.release()
+        self._auth = None
         time.sleep(1)
         continue
+
+      """ Disconnect if auth has changed. """
+      if auth != self._auth:
+        self._auth = auth
+        if self._socket:
+          self._socket.stop()
+          self._socket = None
+
+      """ Do nothing if there is no auth. """
+      if not self._auth:
+        time.sleep(1)
+        continue
+
+      """ Start the socket if not started. """
+      if not self._socket:
+        try:
+          self._socket = _Socket(self._sdk)
+          self._socket.start(**self._auth)
+        except:
+          self._sdk.logger.warning('Socket failed to start.')
+          self._sdk.logger.warning('Socket failed to start: %s', traceback.format_exc())
+          self._socket = None
+          time.sleep(1)
+          continue
 
       """ Listen for socket events. """
       try:
-        socket.wait(1)
-      except Exception:
-        self._lock.release()
+        self._socket.wait(1)
+      except:
+        self._sdk.logger.warning('Socket failed to wait for messages.')
+        self._sdk.logger.warning('Socket failed to wait for messages: %s', traceback.format_exc())
         time.sleep(1)
-        continue
-      else:
-        self._lock.release()
+
+
 
 
 
 class _Socket (object):
 
-  def __init__(self):
+  def __init__(self, sdk):
+    self._sdk = sdk
     self._socket = None
+
+  def start (self, **auth):
+
+
+    class Namespace (BaseNamespace):
+
+      def on_broadcast (self, message):
+        self.socket._sdk.network.on_broadcast(self.socket, message)
+
+      def on_connect (self):
+        self.socket._sdk.network.on_connect(self.socket)
+
+      def on_disconnect (self):
+        self.socket._sdk.network.on_disconnect(self.socket)
+
+      def on_subscribed (self, message):
+        self.socket._sdk.network.on_subscribed(self.socket, message)
+
+    Namespace.socket = self
+
+    params = { 'token': auth['token'] }
+    parsed_host = urlparse.urlparse(auth['network']['host'])
+    self._socket = SocketIO(parsed_host.hostname, parsed_host.port, Namespace, params=params, hurry_interval_in_seconds=10)
+
+  def stop (self):
+    self._sdk.logger.debug('Disconnecting from network.')
+    try:
+      self._socket.disconnect()
+      self._sdk.logger.debug('Disconnected from network')
+    except:
+      self._sdk.logger.warning('Failed to disconnect from network.')
+      self._sdk.logger.debug('Failed to disconnect from network: %s', traceback.format_exc())
+
+  def wait (self, seconds):
+    if not self.is_connected:
+      return time.sleep(seconds)
+    try:
+      self._socket.wait(seconds)
+    except:
+      self._sdk.logger.warning('Failed to wait for socket messages.')
+      self._sdk.logger.debug('Failed to wait for socket messages: %s', traceback.format_exc())
+      time.sleep(seconds)
+
+  def emit (self, name, payload):
+    if not self.is_connected:
+      self._sdk.logger.debug('Failed to emit socket message: Device is offline.')
+      return False
+    try:
+      self._sdk.logger.debug('Emitting socket message: %s,%s', name, payload)
+      self._socket.emit(name, payload)
+      return True
+    except:
+      self._sdk.logger.warning('Failed to emit socket message.')
+      self._sdk.logger.debug('Failed to emit socket message: %s', traceback.format_exc())
+      return False
 
   @property
   def is_connected (self):
     return self._socket and self._socket.connected
-
-  def connect (self, **auth):
-    self.disconnect()
-    params = { 'token': auth['token'] }
-    parsed_host = urlparse.urlparse(auth['network']['host'])
-    self._socket = SocketIO(parsed_host.hostname,
-      parsed_host.port,
-      params=params,
-      Namespace=_SocketHandler,
-      hurry_interval_in_seconds=10)
-
-  def disconnect (self):
-    if self._socket:
-      network.on_disconnect()
-      try:
-        self._socket.disconnect()
-        self._socket = None
-      except:
-        pass
-      network.on_disconnect()
-
-  def wait (self, seconds):
-    if self.is_connected:
-      try:
-        self._socket.wait(seconds=seconds)
-      except Exception:
-        logger.warning('Error in network thread.')
-        logger.debug('Error in network thread: %s', traceback.format_exc())
-        time.sleep(seconds)
-    else:
-      time.sleep(seconds)
-
-  def emit (self, name, payload):
-    if self.is_connected:
-      self._socket.emit(name, payload)
-
-
-
-class _SocketHandler(BaseNamespace):
-
-  def on_broadcast(self, message):
-    network.on_broadcast(message)
-
-  def on_connect(self):
-    network.on_connect()
-
-  def on_disconnect(self):
-    network.on_disconnect()
-
-  def on_subscribed(self, ids):
-    network.on_subscribed(ids)
-
-
-
-socket = _Socket()
-network = _Network()

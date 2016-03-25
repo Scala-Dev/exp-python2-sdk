@@ -1,6 +1,9 @@
 
-from .logger import logger
 import traceback
+import logging
+
+logger = logging.getLogger('exp')
+
 
 class ExpError (Exception):
 
@@ -16,7 +19,7 @@ class AuthenticationError (ExpError):
 
 class UnexpectedError (ExpError):
 
-  def __init__ (self, *arg, **kwargs):
+  def __init__ (self, *args, **kwargs):
     logger.debug('An unexpected error occured:')
     logger.debug(traceback.format_exc())
     super(UnexpectedError, self).__init__(*args, **kwargs)

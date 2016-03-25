@@ -36,24 +36,48 @@ host | ```'https://api.goexp.io'``` | The api server to authenticate with.
 enable_network | ```True``` | Whether to enable real time network communication. If set to ```False``` you will be unable to listen on the [EXP network](# Communicating on the EXP Network).
 
 
-# SDK Reference
-
+# Reference
 
 ## Runtime
-- ```exp.start(username=None, password=None, uuid=None, secret=None, api_key=None, enable_network=True, host='https://api.goexp.io', allow_pairing=False)```: Start the SDK with the given set of options. See [Getting Started](#getting-started).
-- ```exp.get_auth()```: Returns the raw dictionary returned by the server during authentication.
-- ```exp.get_connectction_status()```: Returns ```True``` or ```False``` dependending on whether the network connection is active.
+ | Description
+--- | ---
+`exp_sdk.start(**options)` | Returns an instance of the SDK. See [startup options](#startup-options).
+`exp_sdk.stop()` | Stops all running instances of the SDK.
+`exp.stop()` | Stops the SDK instance.
+`exp.is_connected` | Whether or not there is an active connection to the EXP network.
+`exp.get_auth()` | Returns authentication payload.
+
 
 ## Exceptions
+ | Description
+ --- | ---
+ `exp_sdk.ExpError` | Base class for all EXP exceptions.
+ `exp_sdk.UnexpectedError` | Raised when an unexpected error occurs.
+ `exp_sdk.RuntimeError` | Raised when [startup options](#startup-options) are incorrect or inconsistent.
+ `exp_sdk.AuthenticationError` | Raised when the sdk cannot authenticate due to bad credentials.
+ `exp_sdk.ApiError` | Raised when an API call fails. Has properties `message` and `code`. See the [API documentation](#https://docs.goexp.io).
 
-- ```exp.ExpError```: Base class for errors raised by the SDK.
-- ```exp.AuthenticationError```: Raised when SDK cannot authenticate.
-- ```exp.RuntimeError```: Raised when options pass to ```exp.start``` are invalid or inconsistent. 
-- ```exp.HttpError```: Raised when an API request encouters and error. This exception has the following attributes:
-  - ```code```: The API REST code of the error.
-  - ```status```: The HTTP status code received.
-  - ```message```: A human readable description of the encountered error.
-- ```exp.UnexpectedError```: Raised when an SDK method encounters an unexpected exception.
+
+## Channels
+ | Description
+ --- | ---
+ `exp.getChannel(name, consumer=False, system=False)` | Returns a channel with the given name and channel flags.
+ `channel.broadcast(name, payload, timeout)` | Returns a broadcast](#broadcasts) object.
+ `broadcast.response`
+
+## Broadcasts
+
+## Listeners
+
+## API
+ | Description
+ --- | ---
+ `exp.get(path, params=None, timeout=None)` |
+ `exp.post(path, payload=None, params=None, timeout=None)` |
+ `exp.patch(path, payload=None, params=None, timeout=None)` |
+ `exp.delete(path, payhload=None, params=None, timeout=None)` |
+
+
 
 ## Devices
 
