@@ -39,4 +39,10 @@ class Test2 (utils.Base):
 
 
   def test_listener_cancelling (self):
-    pass  # TODO
+    exp = self.exp_sdk.start(**self.consumer_credentials)
+    channel = exp.get_channel('test_channel_3', consumer=True)
+    listener = channel.listen('test_message_3')
+    listener.cancel()
+    channel.broadcast('test_message_3')
+    if listener.wait(.1):
+      raise Exception

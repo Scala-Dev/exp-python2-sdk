@@ -1,5 +1,6 @@
 import exp as exp_sdk
-
+import string
+import random
 
 
 class Base (object):
@@ -13,6 +14,11 @@ class Base (object):
 
   def tearDown (self):
     self.exp_sdk.stop()
+
+  @staticmethod
+  def generate_name():
+    return ''.join(random.choice(string.ascii_lowercase + string.digits) for _ in range(16))
+
 
 
 class Device (Base):
