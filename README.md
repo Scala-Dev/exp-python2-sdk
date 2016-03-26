@@ -70,24 +70,55 @@ enable_network | ```True``` | Whether to enable real time network communication.
 ## Listeners
 
 ## API
+Allows access to raw authenticated API calls. `params` is a dictionary of url params, `payload` is a JSON serializable type, and `timeout` is the duration, in seconds, to wait for the request to complete.
+
  | Description
  --- | ---
- `exp.get(path, params=None, timeout=None)` |
- `exp.post(path, payload=None, params=None, timeout=None)` |
- `exp.patch(path, payload=None, params=None, timeout=None)` |
- `exp.delete(path, payhload=None, params=None, timeout=None)` |
+ `exp.get(path, params=None, timeout=10)` | Send a GET request.
+ `exp.post(path, payload=None, params=None, timeout=10)` | Send a POST request.
+ `exp.patch(path, payload=None, params=None, timeout=10)` | Send a PATCH request.
+ `exp.put(path, payload=None, params=None, timeout=10)` | Send a PUT request.
+ `exp.delete(path, payhload=None, params=None, timeout=10)` | Send a DELETE request.
 
 
 
 ## Devices
 
-- ```device = exp.get_device(uuid)```: Retrieves a device by uuid.
-- ```device = exp.create_device(document)```: Creates a device from a dictionary.
-- ```devices = exp.find_devices(params)```: Retrieves a list of devices given a dictionary of query parameters. See the API docs.
+
+### `exp.get_device(uuid=None)`
+Returns the device with the given uuid or `None`.
+
+```python
+
+device1 = exp.get_device('[matching uuid]')
+device2 = exp.get_device()  # device2=None
+device3 = exp.get_device('[unmatched uuid]')  # device3=None
+
+```
+
+### `exp.create_device(document=None)`
+
+Creates a device.
+
+```python
+
+device1 = exp.create_device()
+device2 = exp.create_device({ 'name': 'my-new-device' })
+
+```
+
+
+
+
+`exp.find_devices(params=None)` Returns a list of devices matching the given query parameters. `params` is a dictionary of query parameters.
+
+
 - ```device.uuid```: The device's uuid.
-- ```device.document```: The device's underlying document, a dictionary.
-- ```device.save()```: Saves the device to EXP.
-- ```device.get_channel(system=False, consumer=False)```: Retrieves a [channel](#Channels) for communication about the device. 
+- ```device.name```: The device's name.
+- ```device.document```: The device's underlying document.
+- ```device.save()```: Saves the device.
+- ```device.refresh()```: Refreshes the device's document in place.
+- ```device.get_channel(system=False, consumer=False)```: Returns the [channel](#Channels) for this `device`.
 
 ## Things
 - ```thing = exp.get_thing(uuid)```: Retrieves a thing by uuid.

@@ -72,6 +72,7 @@ def start (enable_network=True, host='https://api.goexp.io', **options):
     sdk.network.start()
   exp = Exp(sdk)
   instances.append(exp)
+  exp.get_auth()
   return exp
 
 
@@ -143,18 +144,23 @@ class Exp (object):
     return self._sdk.network.get_channel(*args, **kwargs)
 
 
+  """ API Resources """
+
+  def get_device (self, uuid=None):
+    return api.Device.get(uuid, self._sdk)
+
+  def find_devices (self, params=None):
+    return api.Device.find(params, self._sdk)
+
+  def create_device (self, document=None):
+    return api.Device.create(document, self._sdk)
+
+
 
 
 """
 
-                    # def get_device (*args, **kwargs):
-                    #   return api.Device.get(*args, **kwargs)
-
-                    #   def find_devices (*args, **kwargs):
-                    #     return api.Device.find(*args, **kwargs)
-
-                    #     def create_device (*args, **kwargs):
-                    #       return api.Device.create(*args, **kwargs)
+                    # d
 
 
                     #       def get_thing (*args, **kwargs):

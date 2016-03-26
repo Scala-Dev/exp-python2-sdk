@@ -36,11 +36,10 @@ class RuntimeError(ExpError):
 
 class ApiError(ExpError):
 
-  def __init__(self, payload):
-    logger.debug('An api error has occured.')
-    logger.debug(traceback.format_exc())
-    self.message = payload.get('message')
-    self.code = payload.get('code')
+  def __init__(self, code=None, message=None, status_code=None):
+    self.message = message or 'An unknown error has occurred.'
+    self.code = code or 'unknown.error'
+    self.status_code = status_code
 
   def __str__(self):
     return '%s: %s' % (self.code, self.message)
