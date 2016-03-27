@@ -39,15 +39,9 @@ class TestDevice401 (utils.Base, unittest.TestCase):
 
   def test_login_401 (self):
     self.device_credentials['uuid'] = 'wrong uuid'
-    self.exp = self.exp_sdk.start(**self.device_credentials)
     try:
-      self.exp.get_auth()
+      exp = self.exp_sdk.start(**self.device_credentials)
     except self.exp_sdk.AuthenticationError:
-      try:
-        self.exp.get_auth()
-      except self.exp_sdk.AuthenticationError:
-        pass
-      else:
-        raise Exception
+      pass
     else:
       raise Exception

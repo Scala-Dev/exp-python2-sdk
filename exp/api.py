@@ -51,15 +51,15 @@ class Resource (object):
   def get_channel(self, **kwargs):
     return self._sdk.network.get_channel(self._get_channel_name(), **kwargs)
 
-  def identify (self, *args, consumer=False, **kwargs):
-    return self.get_channel(consumer=consumer).identify(*args, **kwargs)
+  def identify (self, *args, **kwargs):
+    return self.get_channel(consumer=kwargs.pop('consumer', False)).identify(*args, **kwargs)
 
-  def fling (self, *args, consumer=False, **kwargs):
-    return self.get_channel(consumer=consumer).fling(*args, **kwargs)
+  def fling (self, *args, **kwargs):
+    return self.get_channel(consumer=kwargs.pop('consumer', False)).fling(*args, **kwargs)
 
 
 
-class UuidMixin (object):
+class CommonResourceMixin (object):
 
   @property
   def uuid (self):
@@ -90,7 +90,7 @@ class DeviceThingBase(Resource):
     zones = [self._sdk.api.Zone(document, self, self._sdk) for document in location.document['zones'] if document.key in keys]
 
 
-class Device (DeviceThingBase, UuidMixin):
+class Device (DeviceThingBase, CommonResourceMixin):
 
   _collection_path = '/api/devices'
 
@@ -102,12 +102,12 @@ class Device (DeviceThingBase, UuidMixin):
 
 
 
-class Thing (DeviceThingBase):
+class Thing (DeviceThingBase, CommonResourceMixin):
 
   _collection_path = '/api/things'
 
 
-class Experience (Resource):
+class Experience (Resource, CommonResourceMixin):
 
   _collection_path = '/api/experiences'
 
@@ -115,7 +115,7 @@ class Experience (Resource):
     return self._sdk.api.Device.find({ 'experience.uuid' : self.document.get('uuid') })
 
 
-class Location (Resource):
+class Location (Resource, CommonResourceMixin):
 
   _collection_path = '/api/locations'
 
@@ -159,7 +159,7 @@ class Zone (Resource):
     return self._location.document['uuid'] + ':zone:' + self.document['key']
 
 
-class Feed (Resource):
+class Feed (Resource, CommonResourceMixin):
 
   _collection_path = '/api/connectors/feeds'
 
@@ -204,7 +204,7 @@ class Data (Resource):
     return 'data' + ':' + self.document['key'] + ':' + self.document['group']
 
 
-class Content (Resource):
+class Content (Resource, CommonResourceMixin):
 
   _collection_path = '/api/content'
 

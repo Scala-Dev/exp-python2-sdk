@@ -21,11 +21,6 @@ class Test (utils.Device):
     document = self.exp.post('/api/experiences', {})
     self.exp.delete('/api/experiences/' + document['uuid'])
 
-  def test_get_none (self):
-    document = self.exp.get('/api/devices/adsdsadas')
-    if document:
-      raise Exception
-
   def test_post_error (self):
     name = ''.join(random.choice(string.lowercase) for i in range(10))
     self.exp.post('/api/experiences', { 'name': name })

@@ -147,15 +147,46 @@ class Exp (object):
   """ API Resources """
 
   def get_device (self, uuid=None):
-    return api.Device.get(uuid, self._sdk)
+    return self._sdk.api.Device.get(uuid, self._sdk)
 
   def find_devices (self, params=None):
-    return api.Device.find(params, self._sdk)
+    return self._sdk.api.Device.find(params, self._sdk)
 
   def create_device (self, document=None):
-    return api.Device.create(document, self._sdk)
+    return self._sdk.api.Device.create(document, self._sdk)
 
 
+
+  def get_thing (self, uuid=None):
+    return self._sdk.api.Thing.get(uuid, self._sdk)
+
+  def find_things (self, params=None):
+    return self._sdk.api.Thing.find(params, self._sdk)
+
+  def create_thing (self, document=None):
+    return self._sdk.api.Thing.create(document, self._sdk)
+
+
+  def get_experience (self, uuid=None):
+    return self._sdk.api.Experience.get(uuid, self._sdk)
+
+  def find_experiences (self, params=None):
+    return self._sdk.api.Experience.find(params, self._sdk)
+
+  def create_experience (self, document=None):
+    return self._sdk.api.Experience.create(document, self._sdk)
+
+
+  """ def get_experience (self, document=None):
+    return api.Experience.get(*args, **kwargs)
+
+                    #               def find_experiences (*args, **kwargs):
+                    #                 return api.Experience.find(*args, **kwargs)
+
+                    #                 def create_experience (*args, **kwargs):
+                    #                   return api.Experience.create(*args, **kwargs)
+
+"""
 
 
 """
@@ -173,14 +204,7 @@ class Exp (object):
                     #             return api.Thing.create(*args, **kwargs)
 
 
-                    #             def get_experience (*args, **kwargs):
-                    #               return api.Experience.get(*args, **kwargs)
-
-                    #               def find_experiences (*args, **kwargs):
-                    #                 return api.Experience.find(*args, **kwargs)
-
-                    #                 def create_experience (*args, **kwargs):
-                    #                   return api.Experience.create(*args, **kwargs)
+                  
 
 
                     #                   def get_location (*args, **kwargs):
