@@ -51,6 +51,14 @@ class Resource (object):
   def get_channel(self, **kwargs):
     return self._sdk.network.get_channel(self._get_channel_name(), **kwargs)
 
+  def identify (self, *args, consumer=False, **kwargs):
+    return self.get_channel(consumer=consumer).identify(*args, **kwargs)
+
+  def fling (self, *args, consumer=False, **kwargs):
+    return self.get_channel(consumer=consumer).fling(*args, **kwargs)
+
+
+
 class UuidMixin (object):
 
   @property
@@ -92,8 +100,6 @@ class Device (DeviceThingBase, UuidMixin):
       return None
     return self._sdk.api.Experience.get(uuid, self._sdk)
 
-  def identify (self):
-    return self.get_channel().broadcast('identify')
 
 
 class Thing (DeviceThingBase):
