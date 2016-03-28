@@ -21,11 +21,10 @@ class Test1 (utils.Device):
     channel.broadcast('m', 2)
     time.sleep(2)
     channel.broadcast('m', 3)
-    time.sleep(.25)
     channel.broadcast('m', 4)
-    if listener.wait().payload != 3:
+    if not listener.wait().payload in [3, 4]
       raise Exception
-    if listener.wait().payload != 4:
+    if not listener.wait().payload in [3, 4]
       raise Exception
     if listener.wait():
       raise Exception
