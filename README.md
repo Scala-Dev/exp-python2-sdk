@@ -1,44 +1,6 @@
-
-
-# Getting Started
-
-The SDK is started by calling ```exp.start``` and specifying your credentials and configuration options as keyword arguments. ```exp.start``` will start additional threads to process network events. You may supply user, device, or consumer app credentials. You can also authenticate in pairing mode. When ```exp.start``` returns, you are authenticated and can begin using the SDK. 
-
-Users must specify their ```username```, ```password```, and ```organization``` as keyword arguments to ```exp.start```.
-
-```python
-exp.start(username='joe@joemail.com', password='JoeRocks42', organization='joesorg')
-```
-
-Devices must specify their ```uuid``` and ```secret``` as keyword arguments.
-
-```python
-exp.start(uuid='[uuid]', secret='[secret]')
-```
-
-Consumer apps must specify their ```uuid``` and ```api_key``` as keyword arguments.
-
-```python
-exp.start(uuid='[uuid]', api_key='[api key]')
-```
-
-Advanced users can authenticate in pairing mode by setting ```allow_pairing``` to ```False```.
-
-```python
-exp.start(allow_pairing=False)
-```
-
-Additional options:
-
-Name | Default | Description
---- | --- | ---
-host | ```'https://api.goexp.io'``` | The api server to authenticate with.
-enable_network | ```True``` | Whether to enable real time network communication. If set to ```False``` you will be unable to listen on the [EXP network](# Communicating on the EXP Network).
-
-
 # Python SDK Reference v1.0.0
 
-## Getting Started
+## Installation
 
 ## Runtime
 
@@ -191,11 +153,11 @@ Returns a list of [devices](#devices) matching the given query parameters. `para
 
 **`exp.get_thing(uuid=None)`**
 
-Returns the [thing](#things) with the given uuid or `None` if no [thing](#things) could be found.
+Returns the [thing](#thing) with the given uuid or `None` if no [thing](#things) could be found.
 
 **`exp.create_thing(document=None)`**
 
-Returns a [thing](#things) created based on the supplied document.
+Returns a [thing](#thing) created based on the supplied document.
 
 ```python
 thing = exp.create_thing({ 'subtype': 'scala:thing:rfid', 'id': '[rfid]', 'name': 'my-rfid-tag' })
@@ -203,11 +165,11 @@ thing = exp.create_thing({ 'subtype': 'scala:thing:rfid', 'id': '[rfid]', 'name'
 
 **`exp.find_things(params=None)`**
 
-Returns a list of [things](#things) matching the given query parameters. `params` is a dictionary of query parameters.
+Returns a list of [things](#thing) matching the given query parameters. `params` is a dictionary of query parameters.
 
 **`exp.get_experience(uuid=None)`**
 
-Returns the [experience](#experiences) with the given uuid or `None` if no [experience](#experiences) could be found.
+Returns the [experience](#experience) with the given uuid or `None` if no [experience](#experience) could be found.
 
 **`exp.create_experience(document=None)`**
 
@@ -215,11 +177,11 @@ Returns a [experience](#experience) created based on the supplied document.
 
 **`exp.find_experiences(params=None)`**
 
-Returns a list of [experiences](#experiences) matching the given query parameters. `params` is a dictionary of query parameters.
+Returns a list of [experiences](#experience) matching the given query parameters. `params` is a dictionary of query parameters.
 
 **`exp.get_location(uuid=None)`**
 
-Returns the [location](#locations) with the given uuid or `None` if no [location](#locations) could be found.
+Returns the [location](#location) with the given uuid or `None` if no [location](#location) could be found.
 
 **`exp.create_location(document=None)`**
 
@@ -227,12 +189,12 @@ Returns a [location](#location) created based on the supplied document.
 
 **`exp.find_locations(params=None)`**
 
-Returns a list of [locations](#locations) matching the given query parameters. `params` is a dictionary of query parameters.
+Returns a list of [locations](#location) matching the given query parameters. `params` is a dictionary of query parameters.
 
 
 **`exp.get_feed(uuid=None)`**
 
-Returns the [feed](#feeds) with the given uuid or `None` if no [feed](#feeds) could be found.
+Returns the [feed](#feed) with the given uuid or `None` if no [feed](#feed) could be found.
 
 **`exp.create_feed(document=None)`**
 
@@ -244,7 +206,7 @@ feed = exp.create_feed({ 'subtype': 'scala:feed:weather', 'searchValue': '16902'
 
 **`exp.find_feeds(params=None)`**
 
-Returns a list of [feeds](#feeds) matching the given query parameters. `params` is a dictionary of query parameters.
+Returns a list of [feeds](#feed) matching the given query parameters. `params` is a dictionary of query parameters.
 
 ```python
 feeds = exp.find_feeds({ 'subtype': 'scala:feed:facebook' })
@@ -367,7 +329,7 @@ listener = channel.listen('my-event')
 
 while True:
   broadcast = listener.wait(60)
-  if broadcast && broadcast.payload == 'hi!':
+  if broadcast and broadcast.payload == 'hi!':
     broadcast.respond('hi back at you!')
     break
 ```
@@ -461,7 +423,7 @@ Experiences inherit all [common resource methods and attributes](#resource).
 Returns a list of [devices](#device) that are part of this experience.
 
 
-### Locations
+## Location
 Locations inherit all [common resource methods and attributes](#resource).
 
 **`location.get_devices()`**
@@ -481,7 +443,7 @@ Returns a list of [zones](#zone) that are part of this location.
 Returns a url pointing to the location's layout image.
 
 
-### Zones
+## Zone
 Zones inherit the [common resource methods and attributes](#resource) `save()`, `refresh()`, and `get_channel()`.
 
 **`zone.key`**
@@ -505,7 +467,7 @@ Returns all [things](#thing) that are members of this zone.
 Returns the zone's [location](#location)
 
 
-## Feeds
+## Feed
 Feeds inherit all [common resource methods and attributes](#resource).
 
 **`feed.get_data()`**
@@ -580,106 +542,4 @@ Returns the delivery url for a variant of this content item.
  
  Raised when an API call fails. Has properties `message` and `code`.
 
-
-
-
-# Examples
-
-## Creating a Device and Listening for Updates
-
-Updates to API resources are sent out over a system channel with the event name "update".
-
-```python
-  device = exp.create_device({ 'name': 'my_sweet_device' })
-  device.save()
-  channel = device.get_channel(system=True)
-  listener = channel.listen('update')
-  while True:
-    if listener.wait(5):
-      print 'The device was updated!'
-  
-```
-
-
-## Modifying a Resource in Place
-
-```python
-experience = exp.get_experience('[uuid]')
-experience.document['name'] = 'new name'
-experience.save()
-```
-
-
-## Using The EXP Network
-
-The EXP network facilitates real time communication between entities connected to EXP. A user or device can broadcast a JSON serializable payload to users and devices in your organization, and listeners to those broadcasts can respond to the broadcasters.
-
-### Channels
-
-All messages on the EXP network are sent over a channel. Channels have a name, and two flags: ```system``` and ```consumer```.
-
-```python
-channel = exp.get_channel('my_channel', system=False, consumer=False)
-```
-
-Use ```system=True``` to get a system channel. You cannot send messages on a system channels but can listen for system notifications, such as updates to API resources.
-
-Use ```consumer=True``` to get a consumer channel. Consumer devices can only listen or broadcast on consumer channels. When ```consumer=False``` you will not receive consumer device broadcasts and consumer devices will not be able to hear your broadcasts.
-
-Both ```system``` and ```consumer``` default to ```False```. Consumer devices will be unable to broadcast or listen to messages on non-consumer channels.
-
-
-### Broadcasting
-
-Use the broadcast method of a channel object to send a named message containing an optional JSON serializable payload to other entities on the EXP network. You can optionally include a timeout to wait for responses to the broadcast. The broadcast will block for approximately the given timeout and return a ```list``` of response payloads. Each response payload can any JSON serializable type.
-
-```python
-
-channel = exp.get_channel('my_channel')
-responses = channel.broadcast(name='my_event', timeout=5, payload='hello')
-[print response for response in responses]
-
-```
-
-
-### Listening
-
-To listen for broadcasts, call the listen method of a channel object and pass in the name of the event you wish to listen for. When EXP listener has been registered and can start receiving events, a ```listener``` object will be returned. 
-
-Call the ```wait``` method of a listener to block until a broadcast is received, passing in a timeout in seconds. If ```timeout``` elaspes and no broadcasts have been received, ```wait``` will return ```None```.
-
-Once a listener is created, it will receive broadcasts in a background thread even when not waiting. Calling ```wait``` will first attempt to return the oldest broadcast in the queue. Queued broadcasts will be discarded after ~60s if not retrieved during a ```wait```.
-
-```python
-
-channel = exp.get_channel('my_channel')
-listener = channel.listen('my_event')
-
-while True:
-  broadcast = listener.wait(5)
-  if broadcast:
-    print 'Message received!'
-    print broadcast.payload
-    listener.cancel()
-    break
-
-```
-
-
-### Responding
-
-To respond to broadcast, call the respond method on the broadcast object, optionally passing in a JSON serializable response payload.
-
-```python
-
-channel = exp.get_channel('my_channel')
-listener = channel.listen(name='my_event')
-
-while True:
-  broadcast = listener.wait(5)
-  if broadcast and broadcast.payload is 'hello':
-    print 'Responding to broadcast.'
-    broadcast.respond('Nice to meet you!')
-
-```
 
