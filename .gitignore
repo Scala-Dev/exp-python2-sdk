@@ -1,3 +1,4 @@
 *.pyc
 *.log
 dist
+exp_sdk.egg-info

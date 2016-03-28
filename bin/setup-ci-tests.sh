@@ -17,5 +17,4 @@ git pull origin develop
 npm install
 npm start&
 sleep 10
-cd ../exp-js-sdk
-npm run build
+cd ../exp-python2-sdk
