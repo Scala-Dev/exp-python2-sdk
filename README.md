@@ -363,42 +363,42 @@ Returns a list of [locations](#locations) matching the given query parameters. `
 ## exp.get_feed(uuid=None)
 Returns the [feed](#feeds) with the given uuid or `None` if no [feed](#feeds) could be found.
 
-### exp.create_feed(document=None)
+**`exp.create_feed(document=None)`**
 Returns a [feed](#feed) created based on the supplied document.
 ```python
 feed = exp.create_feed({ 'subtype': 'scala:feed:weather', 'searchValue': '16902', 'name': 'My Weather Feed'  })
 ```
 
-### exp.find_feeds(params=None)
+**`exp.find_feeds(params=None)`**
 Returns a list of [feeds](#feeds) matching the given query parameters. `params` is a dictionary of query parameters.
 ```python
 feeds = exp.find_feeds({ 'subtype': 'scala:feed:facebook' })
 ```
 
 
-## exp.get_data(group='default', key=None)
+**`exp.get_data(group='default', key=None)`**
 Returns the [data item](#data) with the given group or key or `None` if the [data item] could not be found.
 ```python
 data = exp.get_data('cats', 'fluffy')
 ```
 
-### exp.create_data(group='default', key=None, value=None)
+**`exp.create_data(group='default', key=None, value=None)`**
 Returns a [data item](#data) created based on the supplied group, key, and value.
 ```python
 data = exp.create_data('cats', 'fluffy', { 'color': 'brown'})
 ```
 
-### exp.find_data(params=None)
+**`exp.find_data(params=None)`**
 Returns a list of [data items](#data) matching the given query parameters. `params` is a dictionary of query parameters.
 ```python
 items = exp.find_data({ 'group': 'cats' })
 ```
 
 
-## exp.get_content(uuid=None)
+**`exp.get_content(uuid=None)`**
 Returns the [content item](#content) with the given uuid or `None` if no [content item](#content) could be found.
 
-### exp.find_content(params=None)
+**`exp.find_content(params=None)`**
 Returns a list of [content items](#content) matching the given query parameters. `params` is a dictionary of query parameters.
 
 
@@ -408,19 +408,16 @@ Returns a list of [content items](#content) matching the given query parameters.
 
 ## Common Resource Methods and Attributes
 
-### resource.uuid
-
+**`resource.uuid`**
 The uuid of the resource. Cannot be set. Maps to `resource.document['uuid']`
 
-### resource.name
-
+**`resource.name`**
 The name of the resource. Can be set directly. Maps to `resource.document['name']`.
 
-### resource.document
-
+**`resource.document`**
 The resource's underlying document
 
-### resource.save()
+**`resource.save()`**
 
 Saves the resource and updates the document in place.
 
@@ -434,7 +431,7 @@ device.save()
 ```
 
 
-### resource.refresh()
+**`resource.refresh()`**
 
 Refreshes the resource's underlying document in place.
 
@@ -450,7 +447,7 @@ print device_2.name  # 'new-name'
 ```
 
 
-### resource.get_channel(system=False, consumer=False)
+**`resource.get_channel(system=False, consumer=False)`**
 
 Returns the channel whose name is contextually associated with this resource.
 
@@ -471,90 +468,88 @@ channel.broadcast('hello?')
 ## Devices
 Devices inherit all [common resource methods and attributes](#common-resource-methods-and-attributes).
 
-### device.get_location()
+**`device.get_location()`**
 Returns the device's [location](#locations) or `None`.
 
-### device.get_zones()
+**`device.get_zones()`**
 Returns a list of the device's [zones](#zones).
 
-### device.get_experience()
+**`device.get_experience()`**
 Returns the device's [experience](#experiences) or `None`
 
 
 ## Things
 Things inherit all [common resource methods and attributes](#common-resource-methods-and-attributes).
 
-### thing.get_location()
+**`thing.get_location()`**
 Returns the device's [location](#locations) or `None`.
 
-### thing.get_zones()
+**`thing.get_zones()`**
 Returns a list of the thing's [#zones](#zones).
 
-### thing.get_experience()
+**`thing.get_experience()`**
 Returns the device's [experience](#experiences) or `None`
 
 
 ### Experiences
 Experiences inherit all [common resource methods and attributes](#common-resource-methods-and-attributes).
 
-### experience.get_devices()
+**`experience.get_devices()`**
 Returns a list of devices that are part of this experience.
 
 
 ### Locations
 Locations inherit all [common resource methods and attributes](#common-resource-methods-and-attributes).
 
-### location.get_devices()
+**`location.get_devices()`**
 Returns a list of [devices](#devices) that are part of this location.
 
-### location.get_things()
+**`location.get_things()`**
 Returns a list of [devices](#devices) that are part of this location.
 
-### location.get_zones()
+**`location.get_zones()`**
 Returns a list of [zones](#zones) that are part of this location.
 
-### location.get_layout_url()
+**`location.get_layout_url()`**
 Returns a url pointing to the location's layout image.
 
 
 ### Zones
 Zones inherit the [common resource methods and attributes](#common-resource-methods-and-attributes) `save()`, `refresh()`, and `get_channel()`.
 
-### zone.key
+**`zone.key`**
 The zone's key.
 
-### zone.name
+**`zone.name`**
 The zone's name.
 
-### zone.get_devices()
+**`zone.get_devices()`**
 Returns all [devices](#devices) that are members of this zone.
 
-### zone.get_things()
+**`zone.get_things()`**
 Returns all [things](#things) that are members of this zone.
 
-### zone.get_location()
+**`zone.get_location()`**
 Returns the zone's [location](#locations)
 
 
 ## Feeds
-
 Feeds inherit all [common resource methods and attributes](#common-resource-methods-and-attributes).
 
-### feed.get_data()
+**`feed.get_data()`**
 Returns the feed's data.
 
 
 ## Data
-
 Data items inherit the [common resource methods and attributes](#common-resource-methods-and-attributes) `save()`, `refresh()`, and `get_channel()`.
 
-### data.key
+**`data.key`**
 The data item's key. Settable.
 
-### data.group
+**`data.group`**
 The data item's group. Settable
 
-### data.value
+**`data.value`**
 The data item's value. Settable.
 
 
