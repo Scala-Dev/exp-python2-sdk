@@ -1,9 +1,9 @@
-import exp as exp_sdk
+import exp_sdk
 import string
 import random
 
 
-from exp import api
+from exp_sdk import api
 
 
 class Base (object):
