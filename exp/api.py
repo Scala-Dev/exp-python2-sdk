@@ -2,35 +2,32 @@ import urllib
 import requests
 import traceback
 
+
 class Resource (object):
 
   _collection_path = None
 
   def __init__ (self, document, sdk):
-    self.document = document
+    self._document = document
     self._sdk = sdk
 
-  @classmethod
-  def _get_resource_path_static (cls, uuid):
-    return cls._collection_path + '/' + uuid
+  def _get_channel_name (self):
+    raise NotImplementedError
 
   def _get_resource_path (self):
-    return self._get_resource_path_static(self.document['uuid'])
+    raise NotImplementedError
 
-  def _get_channel_name (self):
-    return self.document['uuid']
+  @property
+  def document (self):
+    if not isinstance(self._document, dict):
+      self._document = {}
+    return self._document
 
-  @classmethod
-  def get (cls, uuid, sdk):
-    if not isinstance(uuid, basestring):
-      return None
-    try:
-      document = sdk.api.get(cls._get_resource_path_static(uuid))
-    except sdk.exceptions.ApiError as exception:
-      if exception.status_code == 404:
-        return None
-      raise
-    return cls(document, sdk)
+  def save (self):
+    self._document = self._sdk.api.patch(self._get_resource_path(), self.document)
+
+  def refresh (self):
+    self._document = self._sdk.api.get(self._get_resource_path())
 
   @classmethod
   def create (cls, document, sdk):
@@ -38,46 +35,56 @@ class Resource (object):
 
   @classmethod
   def find (cls, params, sdk):
-    if params and not isinstance(params, dict):
-      return []
     return [cls(document, sdk) for document in sdk.api.get(cls._collection_path, params)['results']]
-
-  def save (self):
-    self.document = self._sdk.api.patch(self._get_resource_path(), self.document)
-
-  def refresh (self):
-    self.document = self._sdk.api.get(self._get_resource_path())
 
   def get_channel(self, **kwargs):
     return self._sdk.network.get_channel(self._get_channel_name(), **kwargs)
 
-  def identify (self, *args, **kwargs):
-    return self.get_channel(consumer=kwargs.pop('consumer', False)).identify(*args, **kwargs)
 
-  def fling (self, *args, **kwargs):
-    return self.get_channel(consumer=kwargs.pop('consumer', False)).fling(*args, **kwargs)
-
-
-
-class CommonResourceMixin (object):
+class CommonResource (Resource):
 
   @property
   def uuid (self):
-    return self.document.get('uuid')
+    return self.document['uuid']
 
   @property
-  def name (self):
-    return self.document.get('name')
+  def name(self):
+    return self.document['name']
 
   @name.setter
   def name (self, value):
     self.document['name'] = value
 
+  def _get_channel_name (self):
+    return self.uuid
 
-class DeviceThingBase(Resource):
+  def _get_resource_path (self):
+    return '{}/{}'.format(self._collection_path, self.uuid)
+
+  @classmethod
+  def get (cls, uuid, sdk):
+    if not uuid or not isinstance(uuid, basestring):
+      return None
+    path = '{}/{}'.format(cls._collection_path, uuid)
+    try:
+      remote_document = sdk.api.get(path)
+    except sdk.exceptions.ApiError as exception:
+      if exception.status_code == 404:
+        return None
+      raise
+    return cls(remote_document, sdk)
+
+
+class GetLocationMixin (object):
+
+  def _get_location_uuid (self):
+    raise NotImplementedError
+
+  def _get_zone_keys (self):
+    raise NotImplementedError
 
   def get_location (self):
-    uuid = self.document.get('location', {}).get('uuid')
+    uuid = self._get_location_uuid()
     if not uuid:
       return None
     return self._sdk.api.Location.get(uuid, self._sdk)
@@ -86,125 +93,184 @@ class DeviceThingBase(Resource):
     location = self.get_location()
     if not location:
       return []
-    keys = [document['key'] for document in self.document.get('location', {}).get('zones', [])]
-    zones = [self._sdk.api.Zone(document, self, self._sdk) for document in location.document['zones'] if document.key in keys]
+    keys = self._get_zone_keys()
+    return [self._sdk.api.Zone(document, self, self._sdk) for document in location.document.get('zones', []) if document.get('key') in keys]
 
 
-class Device (DeviceThingBase, CommonResourceMixin):
+class GetExperienceMixin (object):
 
-  _collection_path = '/api/devices'
+  def _get_experience_uuid (self):
+    raise NotImplementedError
 
   def get_experience (self):
-    uuid = self.document.get('experience', {}).get('uuid')
+    uuid = self._get_experience_uuid()
     if not uuid:
       return None
     return self._sdk.api.Experience.get(uuid, self._sdk)
 
 
+class GetDevicesMixin (object):
 
-class Thing (DeviceThingBase, CommonResourceMixin):
+  def _get_device_query_params (self):
+    raise NotImplementedError
+
+  def get_devices (self):
+    return self._sdk.api.Device.find(self._get_device_query_params(), self._sdk)
+
+
+class GetThingsMixin (object):
+
+  def _get_thing_query_params (self):
+    raise NotImplementedError
+
+  def get_things (self):
+    return self._sdk.api.Thing.find(self._get_thing_query_params(), self._sdk)
+
+
+class Device (CommonResource, GetLocationMixin, GetExperienceMixin):
+
+  _collection_path = '/api/devices'
+
+  def _get_experience_uuid (self):
+    return self.document.get('experience', {}).get('uuid')
+
+  def _get_location_uuid (self):
+    return self.document.get('location', {}).get('uuid')
+
+  def _get_zone_keys (self):
+    return [document.get('key') for document in self.document.get('location', {}).get('zones', []) if document.get('key')]
+
+
+class Thing (CommonResource, GetLocationMixin):
 
   _collection_path = '/api/things'
 
+  def _get_location_uuid (self):
+    return self.document.get('location', {}).get('uuid')
 
-class Experience (Resource, CommonResourceMixin):
+  def _get_zone_keys (self):
+    return [document.get('key') for document in self.document.get('location', {}).get('zones', []) if document.get('key')]
+
+
+class Experience (CommonResource, GetDevicesMixin):
 
   _collection_path = '/api/experiences'
 
-  def get_devices (self):
-    return self._sdk.api.Device.find({ 'experience.uuid' : self.document.get('uuid') })
+  def _get_device_query_params (self):
+    return { 'experience.uuid' : self.uuid }
 
 
-class Location (Resource, CommonResourceMixin):
+class Location (CommonResource, GetDevicesMixin, GetThingsMixin):
 
   _collection_path = '/api/locations'
 
-  def get_devices (self):
-    return self._sdk.api.Device.find({ 'location.uuid': self.document.get('uuid') })
+  def _get_device_query_params (self):
+    return { 'location.uuid' : self.uuid }
 
-  def get_things (self):
-    return self._sdk.api.Thing.find({ 'location.uuid': self.document.get('uuid') })
+  def _get_thing_query_params (self):
+    return { 'location.uuid': self.uuid }
 
   def get_zones (self):
     return [self._sdk.api.Zone(document, self, self._sdk) for document in self.document.get('zones', [])]
 
   def get_layout_url (self):
-    return self._get_resource_path(self.document, self._sdk) + '/layout?_rt=' + self._sdk.authenticator.get_auth()['restrictedToken']
+    return self._get_resource_path() + '/layout?_rt=' + self._sdk.authenticator.get_auth()['restrictedToken']
 
 
-class Zone (Resource):
+class Feed (CommonResource):
+
+  _collection_path = '/api/connectors/feeds'
+
+  def get_data (self):
+    return self._sdk.api.get(self._get_resource_path() + '/data')
+
+
+class Zone (Resource, GetDevicesMixin, GetThingsMixin):
 
   def __init__ (self, document, location, sdk):
     super(Zone, self).__init__(document, sdk)
     self._location = location
 
+  @property
+  def key(self):
+    return self.document.get('key')
+
+  def _get_device_query_params (self):
+    return { 'location.uuid': self._location.uuid, 'location.zones.key': self.key }
+
+  def _get_thing_query_params (self):
+    return { 'location.uuid': self._location.uuid, 'location.zones.key': self.key }
+
   def save (self):
     return self._location.save()
 
   def refresh (self):
-    self._location = self._location.refresh()
-    self._document = [document for document in self._location.document.get('zones') if document['key'] == self.document['key']]
+    self._location.refresh()
+    matches = [document for document in self._location.document.get('zones', []) if self.key == document['key']]
+    if matches:
+      self._document = matches[0]
 
   def get_location (self):
     return self._location
 
-  def get_devices (self):
-    return self._sdk.api.Device.find({ 'location.uuid': self._location.document['uuid'], 'location.zones.key': self.document['key'] })
-
-  def get_things (self):
-    return self._sdk.api.Thing.find({ 'location.uuid': self._location.document['uuid'], 'location.zones.key': self.document['key'] })
-
-  @classmethod
-  def get_channel_name(cls, document, sdk):
-    return self._location.document['uuid'] + ':zone:' + self.document['key']
+  def _get_channel_name(self):
+    return self._location.uuid + ':zone:' + self.key
 
 
-class Feed (Resource, CommonResourceMixin):
-
-  _collection_path = '/api/connectors/feeds'
-
-  def get_data (self):
-    return self._sdk.api.get(self._get_resource_path(self.document, self._sdk) + '/data')
 
 
 class Data (Resource):
 
   _collection_path = '/api/data'
 
-  @classmethod
-  def _get_resource_path(cls, document, sdk):
-    return cls._collection_path + '/' + urllib.quote(document['group']) + '/' + urllib.quote(document['key'])
+  @property
+  def group(self):
+    return self.document.get('group')
 
-  @classmethod
-  def get (cls, document, sdk):
-    document['group'] = document.get('group', 'default')
-    document_ = sdk.api.get(self._get_resource_path(document, sdk))
-    if not document_:
-      document_ = { 'key': document['key'], 'group': document['group'], 'value': None }
-    return cls(document, sdk)
+  @property
+  def key(self):
+    return self.document.get('key')
 
   @property
   def value (self):
-    return self.document.get('value', None)
+    return self.document.get('value')
 
   @value.setter
   def value(self, value):
     self.document['value'] = value
 
+  def _get_resource_path(self):
+    return '{}/{}/{}'.format(self._collection_path, self.group, self.key)
+
   @classmethod
-  def create (cls, document, sdk):
-    data = cls(document, sdk)
-    data.save()
-    return data
+  def get (cls, group, key, sdk):
+    path = '{}/{}/{}'.format(cls._collection_path, group, key)
+    try:
+      document = sdk.api.get(path)
+    except sdk.exceptions.ApiError as exception:
+      if exception.status_code == 404:
+        return None
+      raise
+    return cls(document, sdk)
+
+  @classmethod
+  def create (cls, group, key, value, sdk):
+    path = '{}/{}/{}'.format(cls._collection_path, group, key)
+    document = sdk.api.put(path, value)
+    return cls(document, sdk)
 
   def save (self):
-    self.document = self._sdk.api.put(self._get_resource_path(self.document, self._sdk), self.document)
+    a = self._sdk.api.put(self._get_resource_path(), self.value)
+    print 'qweqewwqe'
+    print a
 
   def _get_channel_name (self):
-    return 'data' + ':' + self.document['key'] + ':' + self.document['group']
+    return 'data:{}:{}'.format(self.group, self.key)
 
 
-class Content (Resource, CommonResourceMixin):
+
+
+class Content (CommonResource):
 
   _collection_path = '/api/content'
 

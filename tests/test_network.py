@@ -14,6 +14,23 @@ class Test1 (utils.Device):
     if broadcast.payload['a'] != 1:
       raise
 
+  def test_queue (self):
+    channel = self.exp.get_channel(self.generate_name())
+    listener = channel.listen('m', max_age=2)
+    channel.broadcast('m', 1)
+    channel.broadcast('m', 2)
+    time.sleep(2)
+    channel.broadcast('m', 3)
+    time.sleep(.5)
+    channel.broadcast('m', 4)
+    time.sleep(.5)
+    if listener.wait().payload != 3:
+      raise Exception
+    if listener.wait().payload != 4:
+      raise Exception
+    if listener.wait():
+      raise Exception
+
 
 class Test2 (utils.Base):
 

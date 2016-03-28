@@ -134,6 +134,7 @@ class Exp (object):
   def delete (self, *args, **kwargs):
     return self._sdk.api.delete(*args, **kwargs)
 
+
   """ Network """
 
   @property
@@ -156,7 +157,6 @@ class Exp (object):
     return self._sdk.api.Device.create(document, self._sdk)
 
 
-
   def get_thing (self, uuid=None):
     return self._sdk.api.Thing.get(uuid, self._sdk)
 
@@ -177,70 +177,38 @@ class Exp (object):
     return self._sdk.api.Experience.create(document, self._sdk)
 
 
-  """ def get_experience (self, document=None):
-    return api.Experience.get(*args, **kwargs)
+  def get_location (self, uuid=None):
+    return self._sdk.api.Location.get(uuid, self._sdk)
 
-                    #               def find_experiences (*args, **kwargs):
-                    #                 return api.Experience.find(*args, **kwargs)
+  def find_locations (self, params=None):
+    return self._sdk.api.Location.find(params, self._sdk)
 
-                    #                 def create_experience (*args, **kwargs):
-                    #                   return api.Experience.create(*args, **kwargs)
-
-"""
+  def create_location (self, document=None):
+    return self._sdk.api.Location.create(document, self._sdk)
 
 
-"""
+  def get_feed (self, uuid=None):
+    return self._sdk.api.Feed.get(uuid, self._sdk)
 
-                    # d
+  def find_feeds (self, params=None):
+    return self._sdk.api.Feed.find(params, self._sdk)
 
-
-                    #       def get_thing (*args, **kwargs):
-                    #         return api.Thing.get(*args, **kwargs)
-
-                    #         def find_things (*args, **kwargs):
-                    #           return api.Thing.find(*args, **kwargs)
-
-                    #           def create_thing (*args, **kwargs):
-                    #             return api.Thing.create(*args, **kwargs)
+  def create_feed (self, document=None):
+    return self._sdk.api.Feed.create(document, self._sdk)
 
 
-                  
+  def get_data (self, group=None, key=None):
+    return self._sdk.api.Data.get(group, key, self._sdk)
+
+  def find_data (self, params=None):
+    return self._sdk.api.Data.find(params, self._sdk)
+
+  def create_data (self, group, key, value):
+    return self._sdk.api.Data.create(group, key, value, self._sdk)
 
 
-                    #                   def get_location (*args, **kwargs):
-                    #                     return api.Location.get(*args, **kwargs)
+  def get_content (self, uuid=None):
+    return self._sdk.api.Content.get(uuid, self._sdk)
 
-                    #                     def find_locations (*args, **kwargs):
-                    #                       return api.Location.find(*args, **kwargs)
-
-                    #                       def create_location (*args, **kwargs):
-                    #                         return api.Location.create(*args, **kwargs)
-
-
-                    #                         def get_data (*args, **kwargs):
-                    #                           return api.Data.get(*args, **kwargs)
-
-                    #                           def find_data (*args, **kwargs):
-                    #                             return api.Data.find(*args, **kwargs)
-
-                    #                             def create_data (*args, **kwargs):
-                    #                               return api.Data.create(*args, **kwargs)
-
-
-                    #                               def get_feed (*args, **kwargs):
-                    #                                 return api.Feed.get(*args, **kwargs)
-
-                    #                                 def find_feeds (*args, **kwargs):
-                    #                                   return api.Feed.find(*args, **kwargs)
-
-                    #                                   def create_feed (*args, **kwargs):
-                    #                                     return api.Feed.create(*args, **kwargs)
-
-
-                    #                                     def get_content (*args, **kwargs):
-                    #                                       return api.Content.get(*args, **kwargs)
-
-                    #                                       def find_content (*args, **kwargs):
-                    #                                         return api.Content.find(*args, **kwargs)
-
-"""
+  def find_content (self, params=None):
+    return self._sdk.api.Content.find(params, self._sdk)
