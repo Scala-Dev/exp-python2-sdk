@@ -546,7 +546,7 @@ Returns the feed's data.
 
 ## Data
 
-Zones inherit the [common resource methods and attributes](#common-resource-methods-and-attributes) `save()`, `refresh()`, and `get_channel()`.
+Data items inherit the [common resource methods and attributes](#common-resource-methods-and-attributes) `save()`, `refresh()`, and `get_channel()`.
 
 ### data.key
 The data item's key. Settable.
@@ -558,12 +558,21 @@ The data item's group. Settable
 The data item's value. Settable.
 
 
+## Content
+Content items inherit all [common resource methods and attributes](#common-resource-methods-and-attributes) except `save()`.
 
-### Locations
-### Zones
-### Feeds
-### Data
-### Content
+### `content.subtype`
+The content item's subtype. Not settable.
+
+### `content.get_url()`
+Returns the delivery url for this content item.
+
+### `content.has_variant(name)`
+Returns a boolean indicating whether or not this content item has a variant with the given name.
+
+### `content.get_variant_url(name)`
+Returns the delivery url for a variant of this content item.
+
 
 
 
@@ -578,58 +587,6 @@ The data item's value. Settable.
  `exp_sdk.AuthenticationError` | Raised when the sdk cannot authenticate due to bad credentials.
  `exp_sdk.ApiError` | Raised when an API call fails. Has properties `message` and `code`. See the [API documentation](#https://docs.goexp.io).
 
-
-
-
-## Experiences
-- ```experience = exp.get_experience(uuid)```: Retrieves an experience by uuid.
-- ```experience = exp.create_experience(document)```: Creates an experience from a dictionary.
-- ```experiences = exp.find_experiences(params)```: Retrieves a list of experiences given a dictionary of query params. See the API docs.
-- ```experience.uuid```: The experience's uuid.
-- ```experience.document```: The experience's underlying document, a dictionary.
-- ```experience.save()```: Saves the experience to EXP.
-- ```experience.get_channel(system=False, consumer=False)```: Get a [channel](#Channels) for communication about this experience.
-
-
-## Locations
-- ```location = exp.get_location(uuid)```: Retrieves a location by uuid.
-- ```location = exp.create_location(document)```: Creates a location from a dictionary.
-- ```locations = exp.find_locations(params)```: Retrieves a list of locations given a dictionary of query params. See the API docs.
-- ```location.uuid```: The locations's uuid.
-- ```location.document```: The location's underlying document, a dictionary.
-- ```location.get_channel(system=False, consumer=False)```: Get a [channel](#Channels) for communication about this location.
-- ```location.get_zones()```: Get a list of [zones](#Zones) that are part of this location.
-
-
-## Zones
-- ```zone.document```: The underlying zone's document, a dictionary.
-- ```zone.get_channel(system=False, consumer=False)```: Get a [channel](#Channels) for communication about this zone.
-
-## Content
-- ```content = exp.get_content(uuid)```: Retrieves a content resource by uuid.
-- ```content_list = exp.find_content(params)```: Returns a list of content using the given query params.
-- ```content.get_url()```: Returns a delivery URL for content retrieval.
-- ```content.get_variant_url()```: Returns a delivery URL for a variant of the content.
-- ```content.children```: A list of child content resources.
-- ```content.document```: The underlying zone's document, a dictionary.
-- ```content.subtype```: The content subtype. See the API docs.
-
-## Feeds
-- ```feed = exp.get_feed(uuid)```: Retrieves a feed resource by uuid.
-- ```feeds = exp.find_feeds(params)```: Get a list of feeds given a dictionary of query params. See the API docs.
-- ```feed = exp.create_feed(document)```: Create and save a new feed from a feed document.
-- ```feed.document```: The underlying feed's document, a dictionary.
-- ```feed.get_data()```: Get the feed's data.
-
-
-## Data
-- ```data = exp.get_data(key, group='default')```: Retrieves data by key and group.
-- ```data = exp.find_data(params)```: Retrieves a list of data given a dictionary of query params. See the API docs.
-- ```data = exp.create_data(key, value, group='default')```: 
-- ```data.save()```: Saves the data.
-- ```data.value```: The value of the data, a JSON serializable type.
-- ```data.key```: The data's key.
-- ```data.group```: The data's group.
 
 
 
