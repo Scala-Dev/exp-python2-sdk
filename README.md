@@ -564,14 +564,13 @@ Content items inherit all [common resource methods and attributes](#common-resou
 **`content.subtype`**
 The content item's subtype. Not settable.
 
-`content.get_url()`
+**`content.get_url()`**
 Returns the delivery url for this content item.
 
----
-***`content.has_variant(name)`***
+**`content.has_variant(name)`**
 Returns a boolean indicating whether or not this content item has a variant with the given name.
 
-`content.get_variant_url(name)`
+**`content.get_variant_url(name)`**
 Returns the delivery url for a variant of this content item.
 
 
