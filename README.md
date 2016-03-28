@@ -1,8 +1,8 @@
-# Python SDK Reference v1.0.0
 
-## Installation
 
-## Runtime
+# Installation
+
+# Runtime
 
 **`exp_sdk.start(options)`**
 
@@ -77,6 +77,121 @@ Returns the up to date authentication payload. The authentication payload may be
 print 'My authentication token is : %s' % exp.get_auth()['token']
 ```
 
+# Exceptions
+
+ **`exp_sdk.ExpError`**
+
+ Base class for all EXP exceptions.
+ 
+ **`exp_sdk.UnexpectedError`**
+ 
+ Raised when an unexpected error occurs.
+ 
+ **`exp_sdk.RuntimeError`**
+ 
+ Raised when [startup options](#runtime) are incorrect or inconsistent.
+ 
+ **`exp_sdk.AuthenticationError`**
+ 
+ Raised when the sdk cannot authenticate due to bad credentials.
+ 
+ **`exp_sdk.ApiError`**
+ 
+ Raised when an API call fails. Has properties `message` and `code`.
+
+
+
+
+# Network
+
+## Channels
+
+**`exp.get_channel(name, consumer=False, system=False)`**
+
+Returns a [channel](#channels) with the given name and flags.
+
+```python
+channel = exp.get_channel('my-consumer-channel', consumer=True)
+```
+
+**`channel.broadcast(name, payload=None, timeout=0.1)`**
+
+Sends a [broadcast](#broadcast) on the channel with the given name and payload and returns a list of responses. `timeout` is the number of seconds to hold the request open to wait for responses.
+
+```python
+responses = channel.broadcast('hi!', { 'test': 'nice to meet you!' })
+[print response for response in responses]
+```
+
+**`channel.listen(name, max_age=60)`**
+
+Returns a [listener](#listener) for events on the channel. `max_age` is the number of seconds the listener will buffer events before they are discarded.
+
+```python
+channel = exp.get_channel('my-channel')
+listener = channel.listen('my-event', max_age=30)
+```
+
+**`channel.fling(payload)`**
+
+Fling an app launch payload on the channel.
+
+```python
+location = exp.get_location('[uuid]')
+location.get_channel().fling({ 'appTemplate' : { 'uuid': '[uuid'} })
+```
+
+
+**`channel.identify()`**
+
+Requests that [devices](#device) listening for this event on this channel visually identify themselves. Implementation is device specific; this is simply a convience method.
+
+
+## Listeners
+
+**`listener.wait(timeout=0)`**
+
+Wait for `timeout` seconds for broadcasts. Returns a [broadcast](#broadcasts) if a [broadcast](#broadcasts) is in the queue or if a [broadcast](#broadcasts) is received before the timeout. If timeout is reached, returns `None`. 
+
+```python
+channel = exp.get_channel('my-channel')
+listener = channel.listen('my-event')
+
+while True:
+  broadcast = listener.wait(60)
+  if broadcast:
+    print 'I got a broadcast!'
+```
+
+[Broadcasts](#broadcasts) are returned in the order they are received.
+
+**`listener.cancel()`**
+
+Cancels the listener. The listener is unsubscribed from [broadcasts](#broadcast) and will no longer receive messages. This cannot be undone.
+
+## Broadcasts
+
+**`broadcast.payload`**
+
+The payload of the broadcast. Can be any JSON serializable type.
+
+**`broadcast.respond(response)`**
+
+Respond to the broadcast with a JSON serializable response.
+
+```python
+channel = exp.get_channel('my-channel')
+listener = channel.listen('my-event')
+
+while True:
+  broadcast = listener.wait(60)
+  if broadcast and broadcast.payload == 'hi!':
+    broadcast.respond('hi back at you!')
+    break
+```
+
+
+# API
 
 ## Custom HTTP Requests
 
@@ -123,228 +238,18 @@ Send a DELETE request.
 exp.delete('/api/location/[uuid]') # Delete a location.
 ```
 
-## Getting a Channel
 
-**`exp.get_channel(name, consumer=False, system=False)`**
-
-Returns a [channel](#channels) with the given name and flags.
-
-```python
-channel = exp.get_channel('my-consumer-channel', consumer=True)
-```
-
-## API
-
-**`exp.get_device(uuid=None)`** 
-
-Returns the [device](#devices) with the given uuid or `None` if no [device](#devices) could be found.
-
-**`exp.create_device(document=None)`**
-
-Returns a [device](#devices) created based on the supplied document.
-
-```python
-device = exp.create_device({ 'subtype': 'scala:device:player' })
-```
-
-**`exp.find_devices(params=None)`**
-
-Returns a list of [devices](#devices) matching the given query parameters. `params` is a dictionary of query parameters.
-
-**`exp.get_thing(uuid=None)`**
-
-Returns the [thing](#thing) with the given uuid or `None` if no [thing](#things) could be found.
-
-**`exp.create_thing(document=None)`**
-
-Returns a [thing](#thing) created based on the supplied document.
-
-```python
-thing = exp.create_thing({ 'subtype': 'scala:thing:rfid', 'id': '[rfid]', 'name': 'my-rfid-tag' })
-```
-
-**`exp.find_things(params=None)`**
-
-Returns a list of [things](#thing) matching the given query parameters. `params` is a dictionary of query parameters.
-
-**`exp.get_experience(uuid=None)`**
-
-Returns the [experience](#experience) with the given uuid or `None` if no [experience](#experience) could be found.
-
-**`exp.create_experience(document=None)`**
-
-Returns a [experience](#experience) created based on the supplied document.
-
-**`exp.find_experiences(params=None)`**
-
-Returns a list of [experiences](#experience) matching the given query parameters. `params` is a dictionary of query parameters.
-
-**`exp.get_location(uuid=None)`**
-
-Returns the [location](#location) with the given uuid or `None` if no [location](#location) could be found.
-
-**`exp.create_location(document=None)`**
-
-Returns a [location](#location) created based on the supplied document.
-
-**`exp.find_locations(params=None)`**
-
-Returns a list of [locations](#location) matching the given query parameters. `params` is a dictionary of query parameters.
-
-
-**`exp.get_feed(uuid=None)`**
-
-Returns the [feed](#feed) with the given uuid or `None` if no [feed](#feed) could be found.
-
-**`exp.create_feed(document=None)`**
-
-Returns a [feed](#feed) created based on the supplied document.
-
-```python
-feed = exp.create_feed({ 'subtype': 'scala:feed:weather', 'searchValue': '16902', 'name': 'My Weather Feed'  })
-```
-
-**`exp.find_feeds(params=None)`**
-
-Returns a list of [feeds](#feed) matching the given query parameters. `params` is a dictionary of query parameters.
-
-```python
-feeds = exp.find_feeds({ 'subtype': 'scala:feed:facebook' })
-```
-
-
-**`exp.get_data(group='default', key=None)`**
-
-Returns the [data item](#data) with the given group or key or `None` if the [data item] could not be found.
-
-```python
-data = exp.get_data('cats', 'fluffy')
-```
-
-**`exp.create_data(group='default', key=None, value=None)`**
-
-Returns a [data item](#data) created based on the supplied group, key, and value.
-
-```python
-data = exp.create_data('cats', 'fluffy', { 'color': 'brown'})
-```
-
-**`exp.find_data(params=None)`**
-
-Returns a list of [data items](#data) matching the given query parameters. `params` is a dictionary of query parameters.
-
-```python
-items = exp.find_data({ 'group': 'cats' })
-```
-
-**`exp.get_content(uuid=None)`**
-
-Returns the [content item](#content) with the given uuid or `None` if no [content item](#content) could be found.
-
-**`exp.find_content(params=None)`**
-
-Returns a list of [content items](#content) matching the given query parameters. `params` is a dictionary of query parameters.
-
-
-## Channel
-
-**`channel.broadcast(name, payload=None, timeout=0.1)`**
-
-Sends a [broadcast](#broadcast) on the channel with the given name and payload and returns a list of responses. `timeout` is the number of seconds to hold the request open to wait for responses.
-
-```python
-responses = channel.broadcast('hi!', { 'test': 'nice to meet you!' })
-[print response for response in responses]
-```
-
-**`channel.listen(name, max_age=60)`**
-
-Returns a [listener](#listener) for events on the channel. `max_age` is the number of seconds the listener will buffer events before they are discarded.
-
-```python
-channel = exp.get_channel('my-channel')
-listener = channel.listen('my-event', max_age=30)
-```
-
-**`channel.fling(payload)`**
-
-Fling an app launch payload on the channel.
-
-```python
-location = exp.get_location('[uuid]')
-location.get_channel().fling({ 'appTemplate' : { 'uuid': '[uuid'} })
-```
-
-
-**`channel.identify()`**
-
-Requests that [devices](#device) listening for this event on this channel visually identify themselves. Implementation is device specific; this is simply a convience method.
-
-```python
-location = exp.get_location('[uuid]')
-location.get_channel().identify()  # Tell all devices at this location to identify themselves!
-```
-
-## Listener
-
-**`listener.wait(timeout=0)`**
-
-Wait for `timeout` seconds for broadcasts. Returns a [broadcast](#broadcast) if a [broadcast](#broadcast) is in the queue or if a [broadcast](#broadcast) is received before the timeout. If timeout is reached, returns `None`. 
-
-```python
-channel = exp.get_channel('my-channel')
-listener = channel.listen('my-event')
-
-while True:
-  broadcast = listener.wait(60)
-  if broadcast:
-    print 'I got a broadcast!'
-
-```
-
-[Broadcasts](#broadcast) are returned in the order they are received.
-
-**`listener.cancel()`**
-
-Cancels the listener. The listener is unsubscribed from [broadcasts](#broadcast) and will no longer receive messages. This cannot be undone.
-
-```python
-listener.cancel()
-broadcast = listener.wait(60)  # Will always be None
-```
-
-## Broadcast
-
-**`broadcast.payload`**
-
-The payload of the broadcast. Can be any JSON serializable type.
-
-**`broadcast.respond(response)`**
-
-Respond to the broadcast with a JSON serializable response.
-
-```python
-channel = exp.get_channel('my-channel')
-listener = channel.listen('my-event')
-
-while True:
-  broadcast = listener.wait(60)
-  if broadcast and broadcast.payload == 'hi!':
-    broadcast.respond('hi back at you!')
-    break
-```
-
-## Resource
+## Resources
 
 These methods and attributes are shared by many of the abstract API resources.
 
 **`resource.uuid`**
 
-The uuid of the resource. Cannot be set. Maps to `resource.document['uuid']`
+The uuid of the resource. Cannot be set.
 
 **`resource.name`**
 
-The name of the resource. Can be set directly. Maps to `resource.document['name']`.
+The name of the resource. Can be set directl
 
 **`resource.document`**
 
@@ -383,68 +288,128 @@ channel.broadcast('hello?')
 ```
 
 
-## Device
-Devices inherit all [common resource methods and attributes](#resource).
+## Devices
+
+Devices inherit all [common resource methods and attributes](#resources).
+
+**`exp.get_device(uuid=None)`** 
+
+Returns the device with the given uuid or `None` if no device could be found.
+
+**`exp.create_device(document=None)`**
+
+Returns a device created based on the supplied document.
+
+```python
+device = exp.create_device({ 'subtype': 'scala:device:player' })
+```
+
+**`exp.find_devices(params=None)`**
+
+Returns a list of devices matching the given query parameters. `params` is a dictionary of query parameters.
 
 **`device.get_location()`**
 
-Returns the device's [location](#location) or `None`.
+Returns the device's [location](#locations) or `None`.
 
 **`device.get_zones()`**
 
-Returns a list of the device's [zones](#zone).
+Returns a list of the device's [zones](#zones).
 
 **`device.get_experience()`**
 
-Returns the device's [experience](#experience) or `None`
+Returns the device's [experience](#experiences) or `None`
 
 
-## Thing
-Things inherit all [common resource methods and attributes](#resource).
+## Things
+
+Things inherit all [common resource methods and attributes](#resources).
+
+**`exp.get_thing(uuid=None)`**
+
+Returns the thing with the given uuid or `None` if no things could be found.
+
+**`exp.create_thing(document=None)`**
+
+Returns a thing created based on the supplied document.
+
+```python
+thing = exp.create_thing({ 'subtype': 'scala:thing:rfid', 'id': '[rfid]', 'name': 'my-rfid-tag' })
+```
+
+**`exp.find_things(params=None)`**
+
+Returns a list of things matching the given query parameters. `params` is a dictionary of query parameters.
 
 **`thing.get_location()`**
 
-Returns the thing's [location](#location) or `None`.
+Returns the thing's [location](#locations) or `None`.
 
 **`thing.get_zones()`**
 
-Returns a list of the thing's [#zones](#zone).
+Returns a list of the thing's [#zones](#zones).
 
 **`thing.get_experience()`**
 
-Returns the device's [experience](#experience) or `None`
+Returns the device's [experience](#experiences) or `None`
 
 
-### Experience
-Experiences inherit all [common resource methods and attributes](#resource).
+## Experiences
+
+Experiences inherit all [common resource methods and attributes](#resources).
+
+**`exp.get_experience(uuid=None)`**
+
+Returns the experience with the given uuid or `None` if no experience could be found.
+
+**`exp.create_experience(document=None)`**
+
+Returns an experience created based on the supplied document.
+
+**`exp.find_experiences(params=None)`**
+
+Returns a list of experiences matching the given query parameters. `params` is a dictionary of query parameters.
 
 **`experience.get_devices()`**
 
-Returns a list of [devices](#device) that are part of this experience.
+Returns a list of [devices](#devices) that are part of this experience.
 
 
-## Location
-Locations inherit all [common resource methods and attributes](#resource).
+## Locations
+Locations inherit all [common resource methods and attributes](#resources).
+
+**`exp.get_location(uuid=None)`**
+
+Returns the location with the given uuid or `None` if no location could be found.
+
+**`exp.create_location(document=None)`**
+
+Returns a location created based on the supplied document.
+
+**`exp.find_locations(params=None)`**
+
+Returns a list of locations matching the given query parameters. `params` is a dictionary of query parameters.
+
 
 **`location.get_devices()`**
 
-Returns a list of [devices](#device) that are part of this location.
+Returns a list of [devices](#devices) that are part of this location.
 
 **`location.get_things()`**
 
-Returns a list of [devices](#device) that are part of this location.
+Returns a list of [things](#things) that are part of this location.
 
 **`location.get_zones()`**
 
-Returns a list of [zones](#zone) that are part of this location.
+Returns a list of [zones](#zones) that are part of this location.
 
 **`location.get_layout_url()`**
 
 Returns a url pointing to the location's layout image.
 
 
-## Zone
-Zones inherit the [common resource methods and attributes](#resource) `save()`, `refresh()`, and `get_channel()`.
+## Zones
+Zones inherit the [common resource methods and attributes](#resources) `save()`, `refresh()`, and `get_channel()`.
 
 **`zone.key`**
 
@@ -456,19 +421,39 @@ The zone's name.
 
 **`zone.get_devices()`**
 
-Returns all [devices](#device) that are members of this zone.
+Returns all [devices](#devices) that are members of this zone.
 
 **`zone.get_things()`**
 
-Returns all [things](#thing) that are members of this zone.
+Returns all [things](#things) that are members of this zone.
 
 **`zone.get_location()`**
 
-Returns the zone's [location](#location)
+Returns the zone's [location](#locations)
 
 
-## Feed
-Feeds inherit all [common resource methods and attributes](#resource).
+## Feeds
+Feeds inherit all [common resource methods and attributes](#resources).
+
+**`exp.get_feed(uuid=None)`**
+
+Returns the feed with the given uuid or `None` if no feed could be found.
+
+**`exp.create_feed(document=None)`**
+
+Returns a feed created based on the supplied document.
+
+```python
+feed = exp.create_feed({ 'subtype': 'scala:feed:weather', 'searchValue': '16902', 'name': 'My Weather Feed'  })
+```
+
+**`exp.find_feeds(params=None)`**
+
+Returns a list of feeds matching the given query parameters. `params` is a dictionary of query parameters.
+
+```python
+feeds = exp.find_feeds({ 'subtype': 'scala:feed:facebook' })
+```
 
 **`feed.get_data()`**
 
@@ -476,7 +461,32 @@ Returns the feed's data.
 
 
 ## Data
-Data items inherit the [common resource methods and attributes](#resource) `save()`, `refresh()`, and `get_channel()`.
+
+Data items inherit the [common resource methods and attributes](#resources) `save()`, `refresh()`, and `get_channel()`.
+
+**`exp.get_data(group='default', key=None)`**
+
+Returns the data item with the given group or key or `None` if the data item could not be found.
+
+```python
+data = exp.get_data('cats', 'fluffy')
+```
+
+**`exp.create_data(group='default', key=None, value=None)`**
+
+Returns a data item created based on the supplied group, key, and value.
+
+```python
+data = exp.create_data('cats', 'fluffy', { 'color': 'brown'})
+```
+
+**`exp.find_data(params=None)`**
+
+Returns a list of data items matching the given query parameters. `params` is a dictionary of query parameters.
+
+```python
+items = exp.find_data({ 'group': 'cats' })
+```
 
 **`data.key`**
 
@@ -492,7 +502,15 @@ The data item's value. Settable.
 
 
 ## Content
-Content items inherit all [common resource methods and attributes](#resource) except `save()`.
+Content items inherit all [common resource methods and attributes](#resources) except `save()`.
+
+**`exp.get_content(uuid=None)`**
+
+Returns the content item with the given uuid or `None` if no content item could be found.
+
+**`exp.find_content(params=None)`**
+
+Returns a list of content items matching the given query parameters. `params` is a dictionary of query parameters.
 
 **`content.subtype`**
 
@@ -509,37 +527,5 @@ Returns a boolean indicating whether or not this content item has a variant with
 **`content.get_variant_url(name)`**
 
 Returns the delivery url for a variant of this content item.
-
-
-
-
-
-## Exceptions
-
- **`exp_sdk.ExpError`**
- 
- Base class for all EXP exceptions.
- 
- ---
- 
- **`exp_sdk.UnexpectedError`**
- 
- Raised when an unexpected error occurs.
- 
- ---
- **`exp_sdk.RuntimeError`**
- 
- Raised when [startup options](#runtime) are incorrect or inconsistent.
- 
- ---
- **`exp_sdk.AuthenticationError`**
- 
- Raised when the sdk cannot authenticate due to bad credentials.
- 
- ---
- 
- **`exp_sdk.ApiError`**
- 
- Raised when an API call fails. Has properties `message` and `code`.
 
 
