@@ -197,13 +197,13 @@ class Exp (object):
     return self._sdk.api.Feed.create(document, self._sdk)
 
 
-  def get_data (self, group=None, key=None):
+  def get_data (self, group='default', key=None):
     return self._sdk.api.Data.get(group, key, self._sdk)
 
   def find_data (self, params=None):
     return self._sdk.api.Data.find(params, self._sdk)
 
-  def create_data (self, group, key, value):
+  def create_data (self, group=None, key=None, value=None):
     return self._sdk.api.Data.create(group, key, value, self._sdk)
 
 

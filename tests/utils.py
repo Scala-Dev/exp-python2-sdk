@@ -143,14 +143,15 @@ class CommonResourceBase (ResourceBase):
     super(CommonResourceBase, self).test_save()
 
   def test_refresh (self):
-    name = self.generate_name()
-    resource_1 = self.create_valid()
-    resource_2 = self.get(resource_1.uuid)
-    resource_1.name = name
-    resource_1.save()
-    resource_2.refresh()
-    if resource_2.name != name:
-      raise Exception
+    if self.savable:
+      name = self.generate_name()
+      resource_1 = self.create_valid()
+      resource_2 = self.get(resource_1.uuid)
+      resource_1.name = name
+      resource_1.save()
+      resource_2.refresh()
+      if resource_2.name != name:
+        raise Exception
     super(CommonResourceBase, self).test_refresh()
 
   def test_uuid (self):

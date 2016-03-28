@@ -31,11 +31,8 @@ class Test(utils.Device, utils.ResourceBase):
 
   def test_update (self):
     data = self.create_valid()
-    data.value = '__test__'
+    data.value = { 'test2': 'a' }
     data.save()
-    print data.group
-    print data.key
     data = self.exp.get_data(data.group, data.key)
-    print data.value
-    if data.value != '__test__':
+    if data.value['test2'] != 'a':
       raise Exception

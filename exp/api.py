@@ -193,7 +193,15 @@ class Zone (Resource, GetDevicesMixin, GetThingsMixin):
 
   @property
   def key(self):
-    return self.document.get('key')
+    return self.document['key']
+
+  @property
+  def name(self):
+    return self.document['name']
+
+  @name.setter
+  def name (self, value):
+    self.document['name'] = value
 
   def _get_device_query_params (self):
     return { 'location.uuid': self._location.uuid, 'location.zones.key': self.key }
@@ -227,9 +235,17 @@ class Data (Resource):
   def group(self):
     return self.document.get('group')
 
+  @group.setter
+  def group (self, value):
+    self.document['group'] = value
+
   @property
   def key(self):
     return self.document.get('key')
+
+  @key.setter
+  def group (self, value):
+    self.document['key'] = value
 
   @property
   def value (self):
@@ -257,12 +273,11 @@ class Data (Resource):
   def create (cls, group, key, value, sdk):
     path = '{}/{}/{}'.format(cls._collection_path, group, key)
     document = sdk.api.put(path, value)
-    return cls(document, sdk)
+    data = cls(document, sdk)
+    return data
 
   def save (self):
-    a = self._sdk.api.put(self._get_resource_path(), self.value)
-    print 'qweqewwqe'
-    print a
+    self._document = self._sdk.api.put(self._get_resource_path(), self.value)
 
   def _get_channel_name (self):
     return 'data:{}:{}'.format(self.group, self.key)
@@ -274,38 +289,36 @@ class Content (CommonResource):
 
   _collection_path = '/api/content'
 
-  def get_children (self):
-    if self._children is None:
-      if self.document['children']:
-        return [self.__class__(document, self._sdk) for document in self.document['children']]
-      else:
-        self.refresh()
-        return self.get_children()
-    return []
+  def save (self):
+    raise NotImplementedError
 
-  def get_subtype (self):
-    return self.document['subtype']
+  @property
+  def subtype(self):
+      return self.document.get('subtype')
+
+  def get_children (self):
+    path = '{}/{}/children'.format(self._collection_path, self.uuid)
+    return [self.__class__(document, self._sdk) for document in self._sdk.api.get(path).get('children', [])]
+
+  def _get_delivery_url (self):
+    auth = self._sdk.authenticator.get_auth()
+    base = '{}/api/delivery'.format(auth['api']['host'])
+    encoded_path = urllib.quote(self.document.get('path'))
+    return '{}/{}?_rt={}'.format(base, encoded_path, auth['restrictedToken'])
 
   def get_url (self):
-    auth = self._sdk.authenticator.get_auth()
-    delivery_url = auth['api']['host'] + '/api/delivery'
-    rt_string = '?_rt=' + auth['restrictedToken']
-    if self.get_subtype() == 'scala:content:file':
-      return delivery_url + self._get_resource_path(self.document, self._sdk) + rt_string
-    elif self.get_subtype() == 'scala:content:app':
-      return delivery_url + self._get_resource_path(self.document, self._sdk) + rt_string
-    elif self.get_subtype() == 'scala:content:url':
-      return self.document['url']
+    if self.subtype == 'scala:content:file':
+      return self._get_delivery_url()
+    elif self.subtype == 'scala:content:app':
+      return self._get_delivery_url()
+    elif self.subtype == 'scala:content:url':
+      return self.document.get('url')
 
   def get_variant_url (self, name):
-    auth = self._sdk.authenticator.get_auth()
-    delivery_url = auth['api']['host'] + '/api/delivery'
-    rt_string = '?_rt=' + auth['restrictedToken']
-    if self.get_subtype() == 'scala:content:file' and self.has_variant(name):
-      return delivery_url + '?variant=' + urllib.quote(name) + rt_string
+    return '{}&variant='.format(self._get_delivery_url(), name)
 
   def has_variant (self, name):
-    return name in self.document.get('variants', [])
+    return name in [variant['name'] for variant in self.document.get('variants', [])]
 
 
 
