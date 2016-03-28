@@ -7,8 +7,7 @@ import hmac
 import hashlib
 import threading
 
-from . import logger
-from . import exceptions
+from exp_sdk import exceptions
 
 
 class Authenticator (object):

@@ -5,10 +5,10 @@ import traceback
 
 from logging.handlers import RotatingFileHandler
 
-from . import network
-from . import authenticator
-from . import api
-from . import exceptions
+from exp_sdk import network
+from exp_sdk import authenticator
+from exp_sdk import api
+from exp_sdk import exceptions
 
 
 """ List of all instances of Exp. """
@@ -29,8 +29,8 @@ stream_handler.setFormatter(stream_handler_formatter)
 stream_handler.setLevel(logging.INFO)
 
 logger = logging.getLogger('exp')
-#logger.addHandler(file_handler)
-#logger.addHandler(stream_handler)
+logger.addHandler(file_handler)
+logger.addHandler(stream_handler)
 logger.setLevel(logging.DEBUG)
 
 
