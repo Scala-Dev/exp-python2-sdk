@@ -244,7 +244,7 @@ class Data (Resource):
     return self.document.get('key')
 
   @key.setter
-  def group (self, value):
+  def key (self, value):
     self.document['key'] = value
 
   @property

@@ -27,5 +27,5 @@ class Test(utils.Device, utils.CommonResourceBase):
   def test_layout_url (self):
     location = self.create_valid()
     url = location.get_layout_url()
-    print url
-
+    if not url:
+      raise Exception

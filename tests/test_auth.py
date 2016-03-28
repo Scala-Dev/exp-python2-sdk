@@ -4,7 +4,6 @@ import time
 
 from . import utils
 
-from exp import exceptions
 
 class AuthBase (object):
 

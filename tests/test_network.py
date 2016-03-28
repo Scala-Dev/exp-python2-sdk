@@ -16,14 +16,13 @@ class Test1 (utils.Device):
 
   def test_queue (self):
     channel = self.exp.get_channel(self.generate_name())
-    listener = channel.listen('m', max_age=2)
+    listener = channel.listen('m', max_age=1)
     channel.broadcast('m', 1)
     channel.broadcast('m', 2)
     time.sleep(2)
     channel.broadcast('m', 3)
-    time.sleep(.5)
+    time.sleep(.25)
     channel.broadcast('m', 4)
-    time.sleep(.5)
     if listener.wait().payload != 3:
       raise Exception
     if listener.wait().payload != 4:
