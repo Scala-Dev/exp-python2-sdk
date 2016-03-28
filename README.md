@@ -42,7 +42,7 @@ enable_network | ```True``` | Whether to enable real time network communication.
 
 ## Runtime
 
-**`exp_sdk.start(**options)`**
+**`exp_sdk.start(options)`**
 
 Starts and returns an sdk instance. Can be called multiple times to start multiple independent instances of the sdk. The sdk can be started using user, device, or consumer app credentials.`**options` supports the following keyword arguments:
 
@@ -554,13 +554,31 @@ Returns the delivery url for a variant of this content item.
 
 ## Exceptions
 
- | Description
- --- | ---
- `exp_sdk.ExpError` | Base class for all EXP exceptions.
- `exp_sdk.UnexpectedError` | Raised when an unexpected error occurs.
- `exp_sdk.RuntimeError` | Raised when [startup options](#startup-options) are incorrect or inconsistent.
- `exp_sdk.AuthenticationError` | Raised when the sdk cannot authenticate due to bad credentials.
- `exp_sdk.ApiError` | Raised when an API call fails. Has properties `message` and `code`. See the [API documentation](#https://docs.goexp.io).
+ **`exp_sdk.ExpError`**
+ 
+ Base class for all EXP exceptions.
+ 
+ ---
+ 
+ **`exp_sdk.UnexpectedError`**
+ 
+ Raised when an unexpected error occurs.
+ 
+ ---
+ **`exp_sdk.RuntimeError`**
+ 
+ Raised when [startup options](#runtime) are incorrect or inconsistent.
+ 
+ ---
+ **`exp_sdk.AuthenticationError`**
+ 
+ Raised when the sdk cannot authenticate due to bad credentials.
+ 
+ ---
+ 
+ **`exp_sdk.ApiError`**
+ 
+ Raised when an API call fails. Has properties `message` and `code`.
 
 
 
