@@ -12,7 +12,7 @@ This gives your environment access to the ```exp_sdk``` module.
 
 # Runtime
 
-## Starting
+## Starting the SDK
 
 **`exp_sdk.start(options)`**
 
@@ -41,6 +41,11 @@ exp = exp_sdk.start(uuid='[uuid]', secret='[secret]')
 exp = exp_sdk.start(uuid='[uuid]', api_key='[api-key]')
 ```
 
+
+
+## Stopping the SDK
+
+
 **`exp_sdk.stop()`**
 
 Stops all running instances of the sdk, cancels all listeners and stops all network connections.
@@ -54,9 +59,6 @@ exp_2.create_device()  # Exception.
 ```
 
 New instances can still be created by calling `start`.
-
-
-## Stopping
 
 **`exp.stop()`**
 
@@ -93,17 +95,7 @@ Sdk instances cannot be restarted and any invokation on the instance will raise 
  Raised when an API call fails. Has properties `message` and `code`.
 
 
-## Status
-
-**`exp.is_connected`**
-
-Whether or not there is an active socket connection to the network.
-
-```python
-# Wait for a connection.
-while not exp.is_connected:
-  time.sleep(1)
-```
+## Authentication Payload
 
 
 **`exp.get_auth()`**
@@ -119,6 +111,19 @@ print 'My authentication token is : %s' % exp.get_auth()['token']
 
 
 # Network
+
+## Status
+
+**`exp.is_connected`**
+
+Whether or not there is an active socket connection to the network.
+
+```python
+# Wait for a connection.
+while not exp.is_connected:
+  time.sleep(1)
+```
+
 
 ## Channels
 
