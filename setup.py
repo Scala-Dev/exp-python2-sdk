@@ -1,10 +1,19 @@
 
-from setuptools import setup, find_packages
+from setuptools import setup
 
 setup(
-  name="scala-sdk",
-  version="0.0.0",
-  packages=find_packages(),
-  install_requires=["requests", "socketIO_client"]
+  name='exp-sdk',
+  packages= ['exp_sdk'],
+  version='1.0.0rc1',
+  description='EXP Python SDK',
+  author='Scala',
+  author_email='james.dalessio@scala.com',
+  url='https://github.com/scalainc/exp-python2-sdk',
+  download_url='https://github.com/scalainc/exp-python2-sdk/tarball/1.0.0rc1',
+  install_requires=["requests", "socketIO_client"],
+  license='MIT',
+  keywords=['scala', 'exp', 'sdk', 'signage'],
+  classifiers=[
+    'Programming Language :: Python :: 2'
+  ]
 )
-  

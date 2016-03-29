@@ -1,6 +1,9 @@
 machine:
   python:
     version: 2.7.10
+  node:
+    version: 4.2.3
+
 
 dependencies:
   pre:
@@ -9,4 +12,4 @@ dependencies:
 
 test:
   override:
-    - nosetests
+    - chmod +x ./bin/setup-ci-tests.sh && ./bin/setup-ci-tests.sh && nosetests
