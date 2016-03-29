@@ -7,9 +7,8 @@ Install the `exp-sdk` package from PyPi via your favorite python package manager
 pip install exp-sdk
 ```
 
-```bash
-easy_install exp-sdk
-```
+This gives your environment access to the ```exp_sdk``` module.
+
 
 # Runtime
 
