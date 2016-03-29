@@ -3,7 +3,7 @@ from setuptools import setup
 
 setup(
   name='exp_sdk',
-  pacakges= ['exp_sdk'],
+  packages= ['exp_sdk'],
   version='1.0.0a2',
   description='EXP Python SDK',
   author='Scala',
