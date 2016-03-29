@@ -1,8 +1,19 @@
 
-
 # Installation
 
+Install the `exp-sdk` package from PyPi via your favorite python package manager.
+
+```bash
+pip install exp-sdk
+```
+
+```bash
+easy_install exp-sdk
+```
+
 # Runtime
+
+## Starting
 
 **`exp_sdk.start(options)`**
 
@@ -46,6 +57,8 @@ exp_2.create_device()  # Exception.
 New instances can still be created by calling `start`.
 
 
+## Stopping
+
 **`exp.stop()`**
 
 Stops the sdk instance, cancels its listeners, and stops all network connections.
@@ -57,6 +70,31 @@ exp.get_auth()  # Exception.
 ```
 
 Sdk instances cannot be restarted and any invokation on the instance will raise an exception.
+
+## Exceptions
+
+ **`exp_sdk.ExpError`**
+
+ Base class for all EXP exceptions.
+
+ **`exp_sdk.UnexpectedError`**
+
+ Raised when an unexpected error occurs.
+
+ **`exp_sdk.RuntimeError`**
+
+ Raised when [startup options](#runtime) are incorrect or inconsistent.
+
+ **`exp_sdk.AuthenticationError`**
+
+ Raised when the sdk cannot authenticate due to bad credentials.
+
+ **`exp_sdk.ApiError`**
+
+ Raised when an API call fails. Has properties `message` and `code`.
+
+
+## Status
 
 **`exp.is_connected`**
 
@@ -77,27 +115,6 @@ Returns the up to date authentication payload. The authentication payload may be
 print 'My authentication token is : %s' % exp.get_auth()['token']
 ```
 
-# Exceptions
-
- **`exp_sdk.ExpError`**
-
- Base class for all EXP exceptions.
- 
- **`exp_sdk.UnexpectedError`**
- 
- Raised when an unexpected error occurs.
- 
- **`exp_sdk.RuntimeError`**
- 
- Raised when [startup options](#runtime) are incorrect or inconsistent.
- 
- **`exp_sdk.AuthenticationError`**
- 
- Raised when the sdk cannot authenticate due to bad credentials.
- 
- **`exp_sdk.ApiError`**
- 
- Raised when an API call fails. Has properties `message` and `code`.
 
 
 
@@ -192,100 +209,6 @@ while True:
 
 
 # API
-
-## Custom HTTP Requests
-
-These methods all users to send custom authenticated API calls. `params` is a dictionary of url params, `payload` is a JSON serializable type, and `timeout` is the duration, in seconds, to wait for the request to complete. `path` is relative to the api host root. All methods will return a JSON serializable type.
-
-**`exp.get(path, params=None, timeout=10)`**
-
-Send a GET request.
-
-```python
-result = exp.get('/api/devices', { 'name': 'my-name' })  # Find devices by name.
-```
-
-**`exp.post(path, payload=None, params=None, timeout=10)`**
-
-Send a POST request.
-
-```python
-document = exp.post('/api/experiences', {})  # Create a new empty experience.
-```
-
-**`exp.patch(path, payload=None, params=None, timeout=10)`**
-
-Send a PATCH request.
-
-```python
-document = exp.patch('/api/experiences/[uuid]', { 'name': 'new-name' })  # Rename an experience.
-```
-
-
-**`exp.put(path, payload=None, params=None, timeout=10)`**
-
-Send a PUT request.
-
-```python
-document = exp.put('/api/data/cats/fluffy', { 'eyes': 'blue'})  # Insert a data value.
-```
-
-**`exp.delete(path, payload=None, params=None, timeout=10)`**
-
-Send a DELETE request.
-
-```python
-exp.delete('/api/location/[uuid]') # Delete a location.
-```
-
-
-## Resources
-
-These methods and attributes are shared by many of the abstract API resources.
-
-**`resource.uuid`**
-
-The uuid of the resource. Cannot be set.
-
-**`resource.name`**
-
-The name of the resource. Can be set directl
-
-**`resource.document`**
-
-The resource's underlying document
-
-**`resource.save()`**
-
-Saves the resource and updates the document in place.
-
-```python
-device = exp.get_device('[uuid]')
-device.name = 'my-new-name'
-device.save()  # device changes are now saved
-```
-
-**`resource.refresh()`**
-
-Refreshes the resource's underlying document in place.
-
-```python
-device = exp.create_device()
-device.name = 'new-name'
-device_2 = exp.get_device(device.uuid)
-device.save()
-device_2.refresh()
-print device_2.name  # 'new-name'
-```
-
-**`resource.get_channel(system=False, consumer=False)`**
-
-Returns the channel whose name is contextually associated with this resource.
-
-```python
-channel = experience.get_channel()
-channel.broadcast('hello?')
-```
 
 
 ## Devices
@@ -528,4 +451,95 @@ Returns a boolean indicating whether or not this content item has a variant with
 
 Returns the delivery url for a variant of this content item.
 
+## Resources
 
+These methods and attributes are shared by many of the abstract API resources.
+
+**`resource.uuid`**
+
+The uuid of the resource. Cannot be set.
+
+**`resource.name`**
+
+The name of the resource. Can be set directl
+
+**`resource.document`**
+
+The resource's underlying document
+
+**`resource.save()`**
+
+Saves the resource and updates the document in place.
+
+```python
+device = exp.get_device('[uuid]')
+device.name = 'my-new-name'
+device.save()  # device changes are now saved
+```
+
+**`resource.refresh()`**
+
+Refreshes the resource's underlying document in place.
+
+```python
+device = exp.create_device()
+device.name = 'new-name'
+device_2 = exp.get_device(device.uuid)
+device.save()
+device_2.refresh()
+print device_2.name  # 'new-name'
+```
+
+**`resource.get_channel(system=False, consumer=False)`**
+
+Returns the channel whose name is contextually associated with this resource.
+
+```python
+channel = experience.get_channel()
+channel.broadcast('hello?')
+```
+
+## Custom Requests
+
+These methods all users to send custom authenticated API calls. `params` is a dictionary of url params, `payload` is a JSON serializable type, and `timeout` is the duration, in seconds, to wait for the request to complete. `path` is relative to the api host root. All methods will return a JSON serializable type.
+
+**`exp.get(path, params=None, timeout=10)`**
+
+Send a GET request.
+
+```python
+result = exp.get('/api/devices', { 'name': 'my-name' })  # Find devices by name.
+```
+
+**`exp.post(path, payload=None, params=None, timeout=10)`**
+
+Send a POST request.
+
+```python
+document = exp.post('/api/experiences', {})  # Create a new empty experience.
+```
+
+**`exp.patch(path, payload=None, params=None, timeout=10)`**
+
+Send a PATCH request.
+
+```python
+document = exp.patch('/api/experiences/[uuid]', { 'name': 'new-name' })  # Rename an experience.
+```
+
+
+**`exp.put(path, payload=None, params=None, timeout=10)`**
+
+Send a PUT request.
+
+```python
+document = exp.put('/api/data/cats/fluffy', { 'eyes': 'blue'})  # Insert a data value.
+```
+
+**`exp.delete(path, payload=None, params=None, timeout=10)`**
+
+Send a DELETE request.
+
+```python
+exp.delete('/api/location/[uuid]') # Delete a location.
+```
