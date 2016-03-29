@@ -455,6 +455,10 @@ Returns a boolean indicating whether or not this content item has a variant with
 
 Returns the delivery url for a variant of this content item.
 
+**`content.get_children()`**
+
+Returns a list of the content items children.
+
 ## Resources
 
 These methods and attributes are shared by many of the abstract API resources.
@@ -540,7 +544,7 @@ Send a PUT request.
 document = exp.put('/api/data/cats/fluffy', { 'eyes': 'blue'})  # Insert a data value.
 ```
 
-**`exp.delete(path, payload=None, params=None, timeout=10)`**
+**`exp.delete(path, params=None, timeout=10)`**
 
 Send a DELETE request.
 
