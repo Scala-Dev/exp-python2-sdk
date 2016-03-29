@@ -2,7 +2,7 @@
 from setuptools import setup
 
 setup(
-  name='exp_sdk',
+  name='exp-sdk',
   packages= ['exp_sdk'],
   version='1.0.0rc1',
   description='EXP Python SDK',
