@@ -86,6 +86,10 @@ Sdk instances cannot be restarted and any invokation on the instance will raise 
 
  Raised when [startup options](#runtime) are incorrect or inconsistent.
 
+ **`exp_sdk.NetworkError`**
+
+Raised when an error or timeout occurs when attempting to listen on the network.
+
  **`exp_sdk.AuthenticationError`**
 
  Raised when the sdk cannot authenticate due to bad credentials.
@@ -144,9 +148,9 @@ responses = channel.broadcast('hi!', { 'test': 'nice to meet you!' })
 [print response for response in responses]
 ```
 
-**`channel.listen(name, max_age=60)`**
+**`channel.listen(name, timeout=10, max_age=60)`**
 
-Returns a [listener](#listener) for events on the channel. `max_age` is the number of seconds the listener will buffer events before they are discarded.
+Returns a [listener](#listener) for events on the channel. `timeout` is how many seconds to wait for the channel to open. `max_age` is the number of seconds the listener will buffer events before they are discarded. If `timeout` is reached before the channel is opened, a `NetworkError` will be raised.
 
 ```python
 channel = exp.get_channel('my-channel')
@@ -172,7 +176,7 @@ Requests that [devices](#device) listening for this event on this channel visual
 
 **`listener.wait(timeout=0)`**
 
-Wait for `timeout` seconds for broadcasts. Returns a [broadcast](#broadcasts) if a [broadcast](#broadcasts) is in the queue or if a [broadcast](#broadcasts) is received before the timeout. If timeout is reached, returns `None`. 
+Wait for `timeout` seconds for broadcasts. Returns a [broadcast](#broadcasts) if a [broadcast](#broadcasts) is in the queue or if a [broadcast](#broadcasts) is received before the timeout. If timeout is reached, returns `None`. If timeout is set to 0 (the default), will return immediately.
 
 ```python
 channel = exp.get_channel('my-channel')

@@ -22,12 +22,14 @@ class Test1 (utils.Device):
     time.sleep(2)
     channel.broadcast('m', 3)
     channel.broadcast('m', 4)
-    if not listener.wait().payload in [3, 4]:
+    if not listener.wait(2).payload in [3, 4]:
       raise Exception
-    if not listener.wait().payload in [3, 4]:
+    if not listener.wait(2).payload in [3, 4]:
       raise Exception
     if listener.wait():
       raise Exception
+
+
 
 
 class Test2 (utils.Base):
@@ -61,3 +63,18 @@ class Test2 (utils.Base):
     channel.broadcast('test_message_3')
     if listener.wait(.1):
       raise Exception
+
+  def test_connected (self):
+    exp = self.exp_sdk.start(**self.consumer_credentials)
+    while not exp.is_connected:
+      time.sleep(.1)
+
+
+  def test_listener_timeout (self):
+    self.consumer_credentials['enable_network'] = False
+    exp = self.exp_sdk.start(**self.consumer_credentials)
+    try:
+      exp.get_channel('test').listen('hello', timeout=2)
+    except self.exp_sdk.NetworkError:
+      return
+    raise Exception

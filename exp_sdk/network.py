@@ -94,13 +94,14 @@ class _Channel (object):
     params = {'timeout': timeout * 1000 }
     return self._sdk.api.post(path, payload, params)
 
-  def listen (self, name, **kwargs):
+  def listen (self, name, timeout=10, **kwargs):
     if not self._namespaces.get(name):
       self._namespaces[name] = _Namespace(self._sdk)
     listener = self._namespaces[name].listen(**kwargs)
     if not self.subscription.is_set():
       self._sdk.network.emit('subscribe', [self._id])
-    self.subscription.wait()
+    if not self.subscription.wait(timeout):
+      raise self._sdk.exceptions.NetworkError('Listen timed out.')
     return listener
 
   def receive (self, message):
@@ -130,6 +131,10 @@ class Network (object):
     self._parent = threading.currentThread()
     self._thread = threading.Thread(target=lambda: self._main_event_loop())
     self._lock = threading.Lock()
+
+  @property
+  def is_connected (self):
+    return self._socket and self._socket.is_connected
 
   def start (self):
     self._thread.start()

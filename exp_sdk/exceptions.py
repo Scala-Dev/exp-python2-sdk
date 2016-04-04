@@ -44,3 +44,5 @@ class ApiError(ExpError):
   def __str__(self):
     return '%s: %s' % (self.code, self.message)
 
+
+class NetworkError(ExpError): pass

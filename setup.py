@@ -4,7 +4,7 @@ from setuptools import setup
 setup(
   name='exp-sdk',
   packages= ['exp_sdk'],
-  version='1.0.0',
+  version='1.0.1-rc1',
   description='EXP Python SDK',
   author='Scala',
   author_email='james.dalessio@scala.com',
