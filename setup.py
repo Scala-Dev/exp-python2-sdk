@@ -9,7 +9,7 @@ setup(
   author='Scala',
   author_email='james.dalessio@scala.com',
   url='https://github.com/scalainc/exp-python2-sdk',
-  download_url='https://github.com/scalainc/exp-python2-sdk/tarball/1.0.0',
+  download_url='https://github.com/scalainc/exp-python2-sdk/tarball/1.0.1-rc1',
   install_requires=["requests", "socketIO_client"],
   license='MIT',
   keywords=['scala', 'exp', 'sdk', 'signage'],
