@@ -7,7 +7,7 @@ Install the `exp-sdk` package from PyPi via your favorite python package manager
 pip install exp-sdk
 ```
 
-This gives your environment access to the ```exp_sdk``` module.
+This gives your environment access to the ```exp_sdk``` module. 
 
 
 # Runtime
@@ -111,7 +111,9 @@ print 'My authentication token is : %s' % exp.get_auth()['token']
 ```
 
 
+## Logging
 
+The EXP SDK uses the ```exp-sdk``` logger namespace.
 
 
 # Network
