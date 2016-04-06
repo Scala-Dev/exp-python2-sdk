@@ -5,10 +5,10 @@ import traceback
 
 from logging.handlers import RotatingFileHandler
 
-from exp_sdk import network
-from exp_sdk import authenticator
-from exp_sdk import api
-from exp_sdk import exceptions
+from . import network
+from . import authenticator
+from . import api
+from . import exceptions
 
 
 """ List of all instances of Exp. """
