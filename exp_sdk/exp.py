@@ -16,7 +16,10 @@ instances = []
 
 
 """ Terminate all running instances when Ctrl-C is pressed. """
-signal.signal(signal.SIGINT, lambda signal, frame: stop())
+try:
+  signal.signal(signal.SIGINT, lambda signal, frame: stop())
+except:
+  pass
 
 
 def start (enable_network=True, host='https://api.goexp.io', **options):
