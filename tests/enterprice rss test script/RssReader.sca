@@ -1,0 +1,63 @@
+﻿!ScalaScript1100
+// Saved by Scala Designer Release 11.00.06 at 2016-04-07 09:52:39
+:"RssReader.sca"
+{
+  Group:
+    Template Integer(pageDuration(20));
+    Template String(uuid("110c7cba-f12c-43cf-ab62-e525b8de7f68"), api_key("682e0a9d341b783c6856c4bf8f4f741c08f6251b641aaeec165e052efba7fbd164f0027f5ca3e310b38c247021919d64"), host("http://192.168.168.38:9000"), feed_uuid("f14fb720-6a66-4b26-b38d-283a724695d9"));
+    String(message, info.source("http://rss.cnn.com/rss/edition_world.rss"), info.lastBuildDate("2016-04-06T14:43:54.000Z"));
+    Integer(info.maxResults(100));
+    String(info.name("CNN.com - World"));
+    Boolean(item.exists[9]);
+    String(item.title[10]("How Reagan never left the campaign trail", "Death penalty: 2015 a troubling year", "Putin and the Panama Papers", "It moves, it glows: Vhils' ode to the neon city", "Celebrating 100 years of Bavarian beauty from BMW", "Joining the 'gold rush' with Italy's Tuscan truffle hunters", "Female Sumatran rhino dies weeks after rare sighting", "Nigeria plans to send an astronaut to space by 2030", "World's first dengue fever vaccine launched in the Philippines", "Then and now: The home of the Masters before it was famous"), item.text[10]("Ronald Reagan may have left office in 1989 but, to listen to Republican presidential candidates since, it's like he never left.", "Countries that still execute need to realize that they are on the wrong side of history, writes Salil Shetty.", "The Kremlin introduced a new word into the English language Monday: ^"Putinophobia.^"", "Whether it's blowing up a building façade in Berlin to reveal a carving of a man's face or drilling portraits into favela walls in Rio de Janeiro, raucous street artist Alexandre Farto, who goes by the tag ^"Vhils,^" has left an imprint on urban landscapes across the globe.", "This month ^"the ultimate driving machine^" passes an important milestone: BMW, aka Bavarian Motor Works, is turning 100.", "On a misty Italian morning, we crunch our way through green-yellow undergrowth as Pepe the dog darts on ahead, nose close to the sandy soil.", "The optimistic story of a Sumatran rhino took a dark turn when the mammal died weeks after a rare sighting.", "Nigeria has announced plans to send an astronaut into space by 2030, as part of its drive to develop a world-class space industry.", "Dengue fever infects 390 million people each year, and kills as many as 25,000, according to the World Health Organization.", "It's one of the most iconic venues in sport but Augusta National Golf Club -- home of the Masters -- hasn't always been a pristine golfer's paradise."), item.date[10]("2016-04-06T14:43:26.000Z", "2016-04-06T14:34:05.000Z", "2016-04-06T14:33:42.000Z", "2016-04-06T14:00:23.000Z", "2016-04-06T14:00:08.000Z", "2016-04-06T13:59:42.000Z", "2016-04-06T13:58:43.000Z", "2016-04-06T13:58:12.000Z", "2016-04-06T13:53:29.000Z", "2016-04-06T13:52:29.000Z"));
+    FileNameString(item.image[10]("content:\rss\121102125319-41-ronald-reagan-president-top-tease.jpg", "content:\rss\160406083051-amnesty-death-penalty-report-2015-tease-top-tease.jpg", "content:\rss\160404174156-putin-panama-papers-lklv-chance-00001517-top-tease.jpg", "content:\rss\160404090216-vhils-street-view-top-tease.jpg", "content:\rss\160404173013-bmw-slide-3-top-tease.jpg", "content:\rss\151210180650-truffles-balcony-top-tease.jpg", "content:\rss\160323212452-03-sumatran-rhino-top-tease.jpg", "content:\rss\160406100823-nigcom-sat-1-launch-top-tease.jpg", "content:\rss\150731180818-aedes-aegypti-top-tease.jpg", "content:\rss\160406114700-augusta-slider-tease-top-tease.jpg"));
+    Integer(count, loop, index, totalCount);
+    BackgroundSettings(Size(1920, 1080));
+    Config.RecentPublishLocations(PublishLocation("localhost ContentManager", "RssReader"));
+  Sequence:
+    WindowsScript("RssReader\exprss.py", Wait(On), Engine("Python.AXScript.2"), ShareVariable(uuid), ShareVariable(api_key), ShareVariable(host), ShareVariable(feed_uuid), ShareVariable(message));
+    {
+      Group:
+        XMLFile("Content:\rss\rss_data.xml", MapData("/rss/info", DataVariable(info.source, "source"), DataVariable(info.lastBuildDate, "lastBuildDate"), DataVariable(info.maxResults, "maxResults"), DataVariable(info.name, "name")), MapRepeatingData("/rss/items/item", NumRecords(10), MaxLoops(0), StepSize(1), CurrentCountVariable(count), CurrentIndexVariable(index), CurrentLoopVariable(loop), TotalCountVariable(totalCount), DataExistsVariable(item.exists), DataVariable(item.title, "title"), DataVariable(item.text, "text"), DataVariable(item.date, "date"), DataVariable(item.image, "image")));
+      Sequence:
+        {
+          Group:
+            Picture("RssReader\news.jpg", Wipe("Dissolve", Duration(1000), Direction(90)), Backdrop(Pen(1)), Margin(10, 10, 0, 0), UserPalette(RGBPen(1, $0, $ffffff, $999999, $555555, $712068, $df449c, $dc110e, $662200, $ff5a00, $ff9c00, $ffee00, $8800, $dd00, $cccc, $66ff, $aa, $777777, $bbbbbb, $dddddd, $465a96)), AutoScale(FillAndTrim), Operation(On));
+            Text(1060, 494, info.name, Shadow(Off, Softness(5)), AntiAlias(On), OnReplay(Replace), Under(Off, Thickness(3)), Font("Calibri (Western [])", 50), Tabs(Relative(On)), Wrap(On, Width(1890)));
+            HardDuration(5000);
+            If(index<1);
+        }
+        :"newsPage"
+        {
+          Group:
+            Picture("RssReader\background.jpg", Wipe("Dissolve", Duration(1000), Direction(90)), Backdrop(Pen(2)), Margin(10, 10, 0, 0), UserPalette(RGBPen(1, $0, $ffffff, $999999, $555555, $712068, $df449c, $dc110e, $662200, $ff5a00, $ff9c00, $ffee00, $8800, $dd00, $cccc, $66ff, $aa, $777777, $bbbbbb, $dddddd, $465a96)), AutoScale(FillAndTrim), Operation(On));
+            HardDuration(pageDuration*1000);
+          Sequence:
+            {
+              Group:
+                Text(550, 333, item.title[0], Wipe("ShorterFade", Duration(401), Direction(0), Wait(Off)), Outline(Off, Pen(2)), Shadow(Off, Softness(5), Pen(2)), AntiAlias(On), Update(None), OnReplay(Replace), Under(Off, Thickness(3)), Font("Calibri (Western [])", 50), Bold(On), Tabs(Relative(On)), Wrap(Off, Width(864)));
+                HardDuration(0);
+            }
+            {
+              Group:
+                Text(550, 760, info.name, Wipe("ShorterFade", Duration(401), Direction(0), Wait(Off)), Outline(Off, Pen(2)), Shadow(Off, Softness(5), Pen(2)), AntiAlias(On), Update(None), OnReplay(Replace), Under(Off, Thickness(3)), Font("Calibri (Western [])", 35), Bold(On), Tabs(Relative(On)), Wrap(On, Width(1678)));
+                HardDuration(0);
+            }
+            {
+              Group:
+                Text(860, 429, item.date[0], Wipe("ShorterFade", Duration(401), Direction(0), Wait(Off)), Outline(Off, Pen(2)), Shadow(Off, Softness(5), Pen(2)), AntiAlias(On), Update(None), OnReplay(Replace), Under(Off, Thickness(3)), Font("Calibri (Western [])", 35), Italic(On), Tabs(Relative(On)), Wrap(On, Width(1890)));
+                HardDuration(0);
+            }
+            {
+              Group:
+                Text(860, 473, item.text[0], Wipe("ShorterFade", Duration(401), Direction(0), Wait(Off)), Outline(Off, Pen(2)), Shadow(Off, Softness(5), Pen(2)), AntiAlias(On), Update(None), OnReplay(Replace), Under(Off, Thickness(3)), Font("Calibri (Western [])", 50), Tabs(Relative(On)), Wrap(On, Width(1003)));
+                HardDuration(0);
+            }
+            {
+              Group:
+                Clip(550, 429, item.image[0], Wipe("ShorterFade", Duration(401), Direction(0), Wait(Off)), Transparent(Off), Update(None), OnReplay(Replace), AutoScale(FillAndTrim), Operation(On, Resize(276, 276)));
+                HardDuration(0);
+            }
+        }
+    }
+}
