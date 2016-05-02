@@ -26,7 +26,7 @@ Starts and returns an sdk instance. Can be called multiple times to start multip
 - `api_key=None` The consumer app api key. Required consumer app credential.
 - `allow_pairing=False` Whether to allow authentication to fallback to pairing mode. If `True`, invalid or empty device - credentials will start the sdk in pairing mode.
 - `host=https://api.goexp.io` The api host to authenticate with.
-- `enable_network=True` Whether or not to establish a socket connection with the EXP network. If `False`, you will not be - able to listen for broadcasts.
+- `enable_network=True` Whether or not to establish a socket connection with the EXP. If `False`, you will not be - able to listen for broadcasts.
 
 ```python
 import exp_sdk
@@ -48,7 +48,7 @@ exp = exp_sdk.start(uuid='[uuid]', api_key='[api-key]')
 
 **`exp_sdk.stop()`**
 
-Stops all running instances of the sdk, cancels all listeners and stops all network connections.
+Stops all running instances of the sdk, cancels all listeners and stops all socket connections.
 
 ```python
 exp_1 = exp_sdk.start(**options_1)
@@ -62,7 +62,7 @@ New instances can still be created by calling `start`.
 
 **`exp.stop()`**
 
-Stops the sdk instance, cancels its listeners, and stops all network connections.
+Stops the sdk instance, cancels its listeners, and stops all socket connections.
 
 ```python
 exp = exp_sdk.start(**options)
@@ -110,13 +110,13 @@ print 'My authentication token is : %s' % exp.get_auth()['token']
 
 
 
-# Network
+# Real Time Communications
 
 ## Status
 
 **`exp.is_connected`**
 
-Whether or not there is an active socket connection to the network.
+Whether or not there is an active socket connection.
 
 ```python
 # Wait for a connection.
