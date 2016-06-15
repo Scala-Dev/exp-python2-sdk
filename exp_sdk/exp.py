@@ -5,37 +5,21 @@ import traceback
 
 from logging.handlers import RotatingFileHandler
 
-from exp_sdk import network
-from exp_sdk import authenticator
-from exp_sdk import api
-from exp_sdk import exceptions
+from . import network
+from . import authenticator
+from . import api
+from . import exceptions
 
 
 """ List of all instances of Exp. """
 instances = []
 
 
-""" Configure the logger. """
-file_handler_formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
-
-file_handler = RotatingFileHandler('debug.log', mode='a', maxBytes=5*1024*1024, backupCount=5, encoding=None, delay=0)
-file_handler.setFormatter(file_handler_formatter)
-file_handler.setLevel(logging.DEBUG)
-
-stream_handler_formatter = logging.Formatter('EXP/%(levelname)-10s: %(message)s')
-
-stream_handler = logging.StreamHandler()
-stream_handler.setFormatter(stream_handler_formatter)
-stream_handler.setLevel(logging.INFO)
-
-logger = logging.getLogger('exp')
-logger.addHandler(file_handler)
-logger.addHandler(stream_handler)
-logger.setLevel(logging.DEBUG)
-
-
 """ Terminate all running instances when Ctrl-C is pressed. """
-signal.signal(signal.SIGINT, lambda signal, frame: stop())
+try:
+  signal.signal(signal.SIGINT, lambda signal, frame: stop())
+except:
+  pass
 
 
 def start (enable_network=True, host='https://api.goexp.io', **options):
@@ -89,7 +73,7 @@ class Sdk (object):
     self.authenticator = authenticator.Authenticator(self)
     self.api = api.Api(self)
     self.network = network.Network(self)
-    self.logger = logger
+    self.logger = logging.getLogger('exp-sdk')
     self.exceptions = exceptions
 
 
