@@ -37,3 +37,15 @@ class Test(utils.Device, utils.CommonResourceBase):
     if zones[0].key != 'key_2':
       raise Exception
 
+  def test_get_current (self):
+    device = self.exp.get_current_device()
+    if not device:
+      raise Exception
+    exp = self.exp_sdk.start(**self.consumer_credentials)
+    if exp.get_current_device():
+      raise Exception
+    exp = self.exp_sdk.start(**self.user_credentials)
+    if exp.get_current_device():
+      raise Exception()
+  
+    
