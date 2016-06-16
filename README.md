@@ -325,7 +325,7 @@ Returns the location with the given uuid or `None` if no location could be found
 
 **`exp.get_current_location()`** 
 
-Returns the current experience or `None`.
+Returns the current location or `None`.
 
 **`exp.create_location(document=None)`**
 
