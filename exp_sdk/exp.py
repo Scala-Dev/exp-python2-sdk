@@ -134,6 +134,9 @@ class Exp (object):
   def get_device (self, uuid=None):
     return self._sdk.api.Device.get(uuid, self._sdk)
 
+  def get_current_device(self):
+    return self._sdk.api.Device.get_current(self._sdk)
+
   def find_devices (self, params=None):
     return self._sdk.api.Device.find(params, self._sdk)
 
@@ -154,6 +157,9 @@ class Exp (object):
   def get_experience (self, uuid=None):
     return self._sdk.api.Experience.get(uuid, self._sdk)
 
+  def get_current_experience(self):
+    return self._sdk.api.Experience.get_current(self._sdk)
+
   def find_experiences (self, params=None):
     return self._sdk.api.Experience.find(params, self._sdk)
 
@@ -163,6 +169,13 @@ class Exp (object):
 
   def get_location (self, uuid=None):
     return self._sdk.api.Location.get(uuid, self._sdk)
+
+  def get_current_location(self):
+    return self._sdk.api.Location.get_current(self._sdk)
+
+  def get_current_zones(self):
+    return self._sdk.api.Zone.get_current(self._sdk)
+
 
   def find_locations (self, params=None):
     return self._sdk.api.Location.find(params, self._sdk)

@@ -140,6 +140,13 @@ class Device (CommonResource, GetLocationMixin, GetExperienceMixin):
   def _get_zone_keys (self):
     return [document.get('key') for document in self.document.get('location', {}).get('zones', []) if document.get('key')]
 
+  @classmethod
+  def get_current (cls, sdk):
+    auth = sdk.authenticator.get_auth()
+    if not auth or not auth['identity']['type'] == 'device':
+      return None
+    return cls.get(auth['identity']['uuid'], sdk)
+
 
 class Thing (CommonResource, GetLocationMixin):
 
@@ -159,6 +166,11 @@ class Experience (CommonResource, GetDevicesMixin):
   def _get_device_query_params (self):
     return { 'experience.uuid' : self.uuid }
 
+  @classmethod
+  def get_current (cls, sdk):
+    device = Device.get_current(sdk)
+    return device.get_experience() if device else None
+
 
 class Location (CommonResource, GetDevicesMixin, GetThingsMixin):
 
@@ -175,6 +187,11 @@ class Location (CommonResource, GetDevicesMixin, GetThingsMixin):
 
   def get_layout_url (self):
     return self._get_resource_path() + '/layout?_rt=' + self._sdk.authenticator.get_auth()['restrictedToken']
+
+  @classmethod
+  def get_current(cls, sdk):
+    device = Device.get_current(sdk)
+    return device.get_location() if device else None
 
 
 class Feed (CommonResource):
@@ -224,7 +241,10 @@ class Zone (Resource, GetDevicesMixin, GetThingsMixin):
   def _get_channel_name(self):
     return self._location.uuid + ':zone:' + self.key
 
-
+  @classmethod
+  def get_current(cls, sdk):
+    device = Device.get_current(sdk)
+    return device.get_zones() if device else []
 
 
 class Data (Resource):

@@ -29,3 +29,27 @@ class Test(utils.Device, utils.CommonResourceBase):
     url = location.get_layout_url()
     if not url:
       raise Exception
+
+
+  def test_get_current (self):
+    device = self.exp.get_current_device()
+    device.document['location'] = {}
+    device.document['location']['uuid'] = None
+    device.save()
+    if self.exp.get_current_location():
+      raise Exception
+    location = self.create_valid()
+    device.document['location'] = location.document
+    device.save()
+    location_new = self.exp.get_current_location()
+    if location_new.uuid != location.uuid:
+      raise Exception
+
+    exp = self.exp_sdk.start(**self.consumer_credentials)
+    if exp.get_current_location():
+      raise Exception
+    exp = self.exp_sdk.start(**self.user_credentials)
+    if exp.get_current_location():
+      raise Exception()
+      
+

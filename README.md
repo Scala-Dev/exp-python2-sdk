@@ -229,6 +229,10 @@ Devices inherit all [common resource methods and attributes](#resources).
 
 Returns the device with the given uuid or `None` if no device could be found.
 
+**`exp.get_current_device()`** 
+
+Returns the current device or `None` if not applicable.
+
 **`exp.create_device(document=None)`**
 
 Returns a device created based on the supplied document.
@@ -295,6 +299,10 @@ Experiences inherit all [common resource methods and attributes](#resources).
 
 Returns the experience with the given uuid or `None` if no experience could be found.
 
+**`exp.get_current_experience()`** 
+
+Returns the current experience or `None`.
+
 **`exp.create_experience(document=None)`**
 
 Returns an experience created based on the supplied document.
@@ -314,6 +322,10 @@ Locations inherit all [common resource methods and attributes](#resources).
 **`exp.get_location(uuid=None)`**
 
 Returns the location with the given uuid or `None` if no location could be found.
+
+**`exp.get_current_location()`** 
+
+Returns the current location or `None`.
 
 **`exp.create_location(document=None)`**
 
@@ -343,6 +355,10 @@ Returns a url pointing to the location's layout image.
 
 ## Zones
 Zones inherit the [common resource methods and attributes](#resources) `save()`, `refresh()`, and `get_channel()`.
+
+**`exp.get_current_zones()`** 
+
+Returns a list of the current zones or an empty list.
 
 **`zone.key`**
 
