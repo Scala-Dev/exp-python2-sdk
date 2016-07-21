@@ -404,9 +404,9 @@ Returns a list of feeds matching the given query parameters. `params` is a dicti
 feeds = exp.find_feeds({ 'subtype': 'scala:feed:facebook' })
 ```
 
-**`feed.get_data()`**
+**`feed.get_data(**params)`**
 
-Returns the feed's data.
+Returns the feed's data. For dynamic feeds specify key value query params in `params`.
 
 
 ## Data
