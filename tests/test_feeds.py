@@ -18,3 +18,9 @@ class Test(utils.Device, utils.CommonResourceBase):
     data = feed.get_data()
     if not isinstance(data, dict):
       raise Exception
+
+  def test_dynamic (self):
+    feed = self.exp.create_feed({ 'subtype': 'scala:feed:weather', 'searchValue': '', 'metadata': { 'type': 'dynamic' }, 'name': self.generate_name() })
+    data = feed.get_data(searchValue='19713')
+    if data['search']['search'] != '19713':
+      raise Exception

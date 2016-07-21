@@ -198,8 +198,8 @@ class Feed (CommonResource):
 
   _collection_path = '/api/connectors/feeds'
 
-  def get_data (self):
-    return self._sdk.api.get(self._get_resource_path() + '/data')
+  def get_data (self, **params):
+    return self._sdk.api.get(self._get_resource_path() + '/data', params=params)
 
 
 class Zone (Resource, GetDevicesMixin, GetThingsMixin):
