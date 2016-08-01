@@ -414,6 +414,10 @@ Returns the feed's data. For dynamic feeds specify key value query params in `pa
 Data items inherit the [common resource methods and attributes](#resources) `save()`, `refresh()`, and `get_channel()`.
 There is a limit of 16MB per data document.
 
+*Note that data values must be a javascript object, but can contain other primitives.*
+
+
+
 **`exp.get_data(group='default', key=None)`**
 
 Returns the data item with the given group or key or `None` if the data item could not be found.
