@@ -24,8 +24,11 @@ class Test(utils.Device, utils.CommonResourceBase):
         raise Exception
 
   def test_get_url_url (self):
-    items = [item for item in self.exp.find_content() if item.subtype == 'scala:content:url']
-    if not items:
+    items = self.exp.find_content({ 'subtype': 'scala:content:url' })
+    for item in items:
+      if item.subtype != 'scala:content:url':
+        raise Exception
+    if not items or items.total == 0:
       raise Exception('No url content items found for testing.')
     if not items[0].get_url():
       raise Exception
@@ -42,19 +45,25 @@ class Test(utils.Device, utils.CommonResourceBase):
         raise Exception
 
   def test_get_url_file (self):
-    items = [item for item in self.exp.find_content() if item.subtype == 'scala:content:file']
-    if not items:
-      raise Exception('No url content items found for testing.')
+    items = self.exp.find_content({ 'subtype': 'scala:content:file' })
+    for item in items:
+      if item.subtype != 'scala:content:file':
+        raise Exception
+    if not items or items.total == 0:
+      raise Exception('No file content items found for testing.')
     if not items[0].get_url():
       raise Exception
-
 
   def test_get_url_app (self):
-    items = [item for item in self.exp.find_content() if item.subtype == 'scala:content:app']
-    if not items:
-      raise Exception('No url content items found for testing.')
+    items = self.exp.find_content({ 'subtype': 'scala:content:app' })
+    for item in items:
+      if item.subtype != 'scala:content:app':
+        raise Exception
+    if not items or items.total == 0:
+      raise Exception('No file content items found for testing.')
     if not items[0].get_url():
       raise Exception
+
 
   def test_get_variant_url (self):
     items = self.exp.find_content()
@@ -62,3 +71,15 @@ class Test(utils.Device, utils.CommonResourceBase):
       if not item.get_variant_url('test_variant'):
         raise Exception
 
+
+  def test_children (self):
+    folders = self.exp.find_content({ 'subtype': 'scala:content:folder' })
+    if folders.total == 0:
+      raise Exception
+    for folder in folders:
+      children = folder.get_children({ 'subtype': 'scala:content:folder' })
+      for child in children:
+        if child.subtype != 'scala:content:folder':
+          raise Exception
+      if not children.total and children.total != 0:
+        raise Exception

@@ -35,10 +35,17 @@ class Resource (object):
 
   @classmethod
   def find (cls, params, sdk):
-    return [cls(document, sdk) for document in sdk.api.get(cls._collection_path, params)['results']]
+    return Collection(cls, sdk.api.get(cls._collection_path, params), sdk)
 
   def get_channel(self, **kwargs):
     return self._sdk.network.get_channel(self._get_channel_name(), **kwargs)
+
+
+class Collection (list):
+
+  def __init__(self, Resource, document, sdk):
+    list.__init__(self, [Resource(doc, sdk) for doc in document['results']])
+    self.total = document['total']
 
 
 class CommonResource (Resource):
@@ -114,8 +121,8 @@ class GetDevicesMixin (object):
   def _get_device_query_params (self):
     raise NotImplementedError
 
-  def get_devices (self):
-    return self._sdk.api.Device.find(self._get_device_query_params(), self._sdk)
+  def get_devices (self, params=None):
+    return self._sdk.api.Device.find(self._get_device_query_params(params), self._sdk)
 
 
 class GetThingsMixin (object):
@@ -123,8 +130,8 @@ class GetThingsMixin (object):
   def _get_thing_query_params (self):
     raise NotImplementedError
 
-  def get_things (self):
-    return self._sdk.api.Thing.find(self._get_thing_query_params(), self._sdk)
+  def get_things (self, params=None):
+    return self._sdk.api.Thing.find(self._get_thing_query_params(params), self._sdk)
 
 
 class Device (CommonResource, GetLocationMixin, GetExperienceMixin):
@@ -163,8 +170,9 @@ class Experience (CommonResource, GetDevicesMixin):
 
   _collection_path = '/api/experiences'
 
-  def _get_device_query_params (self):
-    return { 'experience.uuid' : self.uuid }
+  def _get_device_query_params (self, params):
+    params = params or {}
+    params['experience.uuid'] = self.uuid
 
   @classmethod
   def get_current (cls, sdk):
@@ -176,11 +184,13 @@ class Location (CommonResource, GetDevicesMixin, GetThingsMixin):
 
   _collection_path = '/api/locations'
 
-  def _get_device_query_params (self):
-    return { 'location.uuid' : self.uuid }
+  def _get_device_query_params (self, params=None):
+    params = params or {}
+    params['location.uuid'] = self.uuid
 
-  def _get_thing_query_params (self):
-    return { 'location.uuid': self.uuid }
+  def _get_thing_query_params (self, params=None):
+    params = params or {}
+    params['location.uuid'] = self.uuid
 
   def get_zones (self):
     return [self._sdk.api.Zone(document, self, self._sdk) for document in self.document.get('zones', [])]
@@ -220,11 +230,17 @@ class Zone (Resource, GetDevicesMixin, GetThingsMixin):
   def name (self, value):
     self.document['name'] = value
 
-  def _get_device_query_params (self):
-    return { 'location.uuid': self._location.uuid, 'location.zones.key': self.key }
+  def _get_device_query_params (self, params=None):
+    params = params or {}
+    params['location.uuid'] = self._location.uuid
+    params['location.zones.key'] = self.key
+    return params
 
-  def _get_thing_query_params (self):
-    return { 'location.uuid': self._location.uuid, 'location.zones.key': self.key }
+  def _get_thing_query_params (self, params=None):
+    params = params or {}
+    params['location.uuid'] = self._location.uuid
+    params['location.zones.key'] = self.key
+    return params
 
   def save (self):
     return self._location.save()
@@ -316,9 +332,10 @@ class Content (CommonResource):
   def subtype(self):
       return self.document.get('subtype')
 
-  def get_children (self):
-    path = '{}/{}/children'.format(self._collection_path, self.uuid)
-    return [self.__class__(document, self._sdk) for document in self._sdk.api.get(path).get('children', [])]
+  def get_children (self, params=None):
+    params = params or {}
+    params['parent'] = self.uuid
+    return Collection(self.__class__, self._sdk.api.get(self._collection_path, params), self._sdk)
 
   def _get_delivery_url (self):
     auth = self._sdk.authenticator.get_auth()

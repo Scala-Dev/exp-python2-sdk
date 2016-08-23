@@ -14,6 +14,8 @@ class Test(utils.Device, utils.CommonResourceBase):
     location = self.create_valid()
     device = self.exp.create_device({ 'location': { 'uuid': location.uuid } })
     devices = location.get_devices()
+    if devices.total < 1:
+      raise Exception
     if device.uuid not in [x.uuid for x in devices]:
       raise Exception
 
@@ -21,6 +23,8 @@ class Test(utils.Device, utils.CommonResourceBase):
     location = self.create_valid()
     thing = self.exp.create_thing({ 'location': { 'uuid': location.uuid }, 'name': self.generate_name(), 'subtype': 'scala:thing:rfid', 'id': '123'})
     things = location.get_things()
+    if things.total < 1:
+      raise Exception
     if thing.uuid not in [x.uuid for x in things]:
       raise Exception
 
@@ -29,7 +33,6 @@ class Test(utils.Device, utils.CommonResourceBase):
     url = location.get_layout_url()
     if not url:
       raise Exception
-
 
   def test_get_current (self):
     device = self.exp.get_current_device()
@@ -51,5 +54,3 @@ class Test(utils.Device, utils.CommonResourceBase):
     exp = self.exp_sdk.start(**self.user_credentials)
     if exp.get_current_location():
       raise Exception()
-      
-

@@ -93,7 +93,10 @@ class ResourceBase (object):
     if not self.findable:
       return
     self.create_valid()
-    [self.assert_isinstance(resource) for resource in self.find()]
+    collection = self.find()
+    [self.assert_isinstance(resource) for resource in collection]
+    if not collection.total:
+      raise Exception
     resources = self.find({ 'name': resource.name })
     if not resources:
       raise Exception

@@ -14,6 +14,8 @@ class Test(utils.Device, utils.CommonResourceBase):
     experience = self.create_valid()
     device = self.exp.create_device({ 'experience': { 'uuid': experience.uuid } })
     devices = experience.get_devices()
+    if devices.total < 1:
+      raise Exception
     if device.uuid not in [x.uuid for x in devices]:
       raise Exception
 
