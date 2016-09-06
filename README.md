@@ -243,7 +243,7 @@ device = exp.create_device({ 'subtype': 'scala:device:player' })
 
 **`exp.find_devices(params=None)`**
 
-Returns an iterable of devices matching the given query parameters. `params` is a dictionary of query parameters. Iterable has attribute total which is the total number of matching results.
+Returns an iterable of devices matching the given query parameters. `params` is a dictionary of query parameters. Iterable also has attributes matching the raw API response document properties (i.e. `total` and `results`).
 
 **`device.get_location()`**
 
@@ -276,7 +276,7 @@ thing = exp.create_thing({ 'subtype': 'scala:thing:rfid', 'id': '[rfid]', 'name'
 
 **`exp.find_things(params=None)`**
 
-Returns an iterable of things matching the given query parameters. `params` is a dictionary of query parameters. Iterable has attribute total which is the total number of matching results.
+Returns an iterable of things matching the given query parameters. `params` is a dictionary of query parameters. Iterable also has attributes matching the raw API response document properties (i.e. `total` and `results`).
 
 **`thing.get_location()`**
 
@@ -309,11 +309,11 @@ Returns an experience created based on the supplied document.
 
 **`exp.find_experiences(params=None)`**
 
-Returns an iterable of experiences matching the given query parameters. `params` is a dictionary of query parameters. Iterable has attribute total which is the total number of matching results.
+Returns an iterable of experiences matching the given query parameters. `params` is a dictionary of query parameters. Iterable also has attributes matching the raw API response document properties (i.e. `total` and `results`).
 
 **`experience.get_devices(params=None)`**
 
-Returns an iterable of [devices](#devices) that are part of this experience. `params` is a dictionary of query parameters. Iterable has attribute total which is the total number of matching results.
+Returns an iterable of [devices](#devices) that are part of this experience. `params` is a dictionary of query parameters. Iterable also has attributes matching the raw API response document properties (i.e. `total` and `results`).
 
 
 ## Locations
@@ -333,16 +333,16 @@ Returns a location created based on the supplied document.
 
 **`exp.find_locations(params=None)`**
 
-Returns an iterable of locations matching the given query parameters. `params` is a dictionary of query parameters. Iterable has attribute total which is the total number of matching results.
+Returns an iterable of locations matching the given query parameters. `params` is a dictionary of query parameters. Iterable also has attributes matching the raw API response document properties (i.e. `total` and `results`).
 
 
 **`location.get_devices(params=None)`**
 
-Returns an iterable of [devices](#devices) that are part of this location. `params` is a dictionary of query parameters. Iterable has attribute total which is the total number of matching results.
+Returns an iterable of [devices](#devices) that are part of this location. `params` is a dictionary of query parameters. Iterable also has attributes matching the raw API response document properties (i.e. `total` and `results`).
 
 **`location.get_things(params=None)`**
 
-Returns an iterable of [things](#things) that are part of this location. `params` is a dictionary of query parameters. Iterable has attribute total which is the total number of matching results.
+Returns an iterable of [things](#things) that are part of this location. `params` is a dictionary of query parameters. Iterable also has attributes matching the raw API response document properties (i.e. `total` and `results`).
 
 **`location.get_zones()`**
 
@@ -398,7 +398,7 @@ feed = exp.create_feed({ 'subtype': 'scala:feed:weather', 'searchValue': '16902'
 
 **`exp.find_feeds(params=None)`**
 
-Returns an iterable of feeds matching the given query parameters. `params` is a dictionary of query parameters. Iterable has attribute total which is the total number of matching results.
+Returns an iterable of feeds matching the given query parameters. `params` is a dictionary of query parameters. Iterable also has attributes matching the raw API response document properties (i.e. `total` and `results`).
 
 ```python
 feeds = exp.find_feeds({ 'subtype': 'scala:feed:facebook' })
@@ -436,7 +436,7 @@ data = exp.create_data('cats', 'fluffy', { 'color': 'brown'})
 
 **`exp.find_data(params=None)`**
 
-Returns an iterable of data items matching the given query parameters. `params` is a dictionary of query parameters.  Iterable has attribute total which is the total number of matching results.
+Returns an iterable of data items matching the given query parameters. `params` is a dictionary of query parameters.  Iterable also has attributes matching the raw API response document properties (i.e. `total` and `results`).
 
 ```python
 items = exp.find_data({ 'group': 'cats' })
@@ -484,7 +484,7 @@ Returns the delivery url for a variant of this content item.
 
 **`content.get_children(params)`**
 
-Returns an iterable of the content items children. `params` is a dictionary of query parameters. Iterable has attribute total which is the total number of matching results.
+Returns an iterable of the content items children. `params` is a dictionary of query parameters. Iterable also has attributes matching the raw API response document properties (i.e. `total` and `results`).
 
 ## Resources
 

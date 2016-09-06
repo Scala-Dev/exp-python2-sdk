@@ -98,6 +98,10 @@ class ResourceBase (object):
     if not collection.total:
       raise Exception
     resources = self.find({ 'name': resource.name })
+    if not resources.results[0] == resources[0].document:
+      raise Exception
+    if not resources.total and resources.total != 0:
+      raise Exception
     if not resources:
       raise Exception
     self.assert_isinstance(resources[0])
