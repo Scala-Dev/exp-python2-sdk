@@ -45,8 +45,8 @@ class Collection (list):
 
   def __init__(self, Resource, document, sdk):
     list.__init__(self, [Resource(doc, sdk) for doc in document['results']])
-    self.total = document['total']
-
+    for key, value in document.iteritems():
+      self.__dict__[key] = value
 
 class CommonResource (Resource):
 
