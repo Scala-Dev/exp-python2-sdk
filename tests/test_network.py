@@ -22,6 +22,7 @@ class Test1 (utils.Device):
     time.sleep(2)
     channel.broadcast('m', 3)
     channel.broadcast('m', 4)
+    time.sleep(.5)
     if not listener.wait(2).payload in [3, 4]:
       raise Exception
     if not listener.wait(2).payload in [3, 4]:
@@ -78,3 +79,17 @@ class Test2 (utils.Base):
     except self.exp_sdk.NetworkError:
       return
     raise Exception
+
+  def test_cloning (self):
+    self.consumer_credentials['enable_network'] = True
+    exp = self.exp_sdk.start(**self.consumer_credentials)
+    channel = exp.get_channel('hi', consumer=True);
+    listener1 = channel.listen('hi')
+    listener2 = channel.listen('hi');
+    channel.broadcast('hi', {});
+    
+    broadcast = listener1.wait(5)
+    broadcast.payload['a'] = 1
+    broadcast2 = listener2.wait(5)
+    if 'a' in broadcast.payload and broadcast.payload['a'] == 1:
+      raise Exception
