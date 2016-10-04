@@ -19,8 +19,8 @@ class _Broadcast (object):
     self.time = int(time.time())
 
   @property
-  def payload(self):
-    return self._message['payload']
+  def payload (self):
+    return json.loads(json.dumps(self._message['payload']))
 
   def respond(self, response):
     self._sdk.api.post('/api/networks/current/responses', {'id': self._message['id'], 'channel': self._message['channel'], 'payload': response })
