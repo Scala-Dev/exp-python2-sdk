@@ -66,13 +66,13 @@ class CommonResource (Resource):
     return self.uuid
 
   def _get_resource_path (self):
-    return '{}/{}'.format(self._collection_path, self.uuid)
+    return '{1}/{2}'.format(self._collection_path, self.uuid)
 
   @classmethod
   def get (cls, uuid, sdk):
     if not uuid or not isinstance(uuid, basestring):
       return None
-    path = '{}/{}'.format(cls._collection_path, uuid)
+    path = '{1}/{2}'.format(cls._collection_path, uuid)
     try:
       remote_document = sdk.api.get(path)
     except sdk.exceptions.ApiError as exception:
@@ -292,11 +292,11 @@ class Data (Resource):
     self.document['value'] = value
 
   def _get_resource_path(self):
-    return '{}/{}/{}'.format(self._collection_path, self.group, self.key)
+    return '{1}/{2}/{3}'.format(self._collection_path, self.group, self.key)
 
   @classmethod
   def get (cls, group, key, sdk):
-    path = '{}/{}/{}'.format(cls._collection_path, group, key)
+    path = '{1}/{2}/{3}'.format(cls._collection_path, group, key)
     try:
       document = sdk.api.get(path)
     except sdk.exceptions.ApiError as exception:
@@ -307,7 +307,7 @@ class Data (Resource):
 
   @classmethod
   def create (cls, group, key, value, sdk):
-    path = '{}/{}/{}'.format(cls._collection_path, group, key)
+    path = '{1}/{2}/{3}'.format(cls._collection_path, group, key)
     document = sdk.api.put(path, value)
     data = cls(document, sdk)
     return data
@@ -316,7 +316,7 @@ class Data (Resource):
     self._document = self._sdk.api.put(self._get_resource_path(), self.value)
 
   def _get_channel_name (self):
-    return 'data:{}:{}'.format(self.group, self.key)
+    return 'data:{1}:{2}'.format(self.group, self.key)
 
 
 
