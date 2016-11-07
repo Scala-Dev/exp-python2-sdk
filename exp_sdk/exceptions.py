@@ -36,13 +36,14 @@ class RuntimeError(ExpError):
 
 class ApiError(ExpError):
 
-  def __init__(self, code=None, message=None, status_code=None):
+  def __init__(self, code=None, message=None, status_code=None, payload=None):
     self.message = message or 'An unknown error has occurred.'
     self.code = code or 'unknown.error'
     self.status_code = status_code
+    self.payload = payload
 
   def __str__(self):
-    return '%s: %s' % (self.code, self.message)
+    return '%s: %s \n %s' % (self.code, self.message, self.payload)
 
 
 class NetworkError(ExpError): pass

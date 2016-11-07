@@ -96,7 +96,7 @@ Raised when an error or timeout occurs when attempting to listen on the network.
 
  **`exp_sdk.ApiError`**
 
- Raised when an API call fails. Has properties `message` and `code`.
+ Raised when an API call fails. Has properties `message`, `code`, and `payload`. `payload` is the parsed JSON document received from the API.
 
 
 ## Authentication Payload

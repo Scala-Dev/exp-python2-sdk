@@ -11,7 +11,7 @@ class Test(utils.Device, utils.CommonResourceBase):
   class_ = utils.api.Feed
 
   def generate_valid_document (self):
-    return { 'subtype': 'scala:feed:weather', 'searchValue': '19713', 'name': self.generate_name() }
+    return { 'subtype': 'scala:feed:weather', 'dataType': 'static', 'searchValue': '19713', 'name': self.generate_name() }
 
   def test_get_data (self):
     feed = self.create_valid()
@@ -20,7 +20,7 @@ class Test(utils.Device, utils.CommonResourceBase):
       raise Exception
 
   def test_dynamic (self):
-    feed = self.exp.create_feed({ 'subtype': 'scala:feed:weather', 'searchValue': '', 'metadata': { 'type': 'dynamic' }, 'name': self.generate_name() })
+    feed = self.exp.create_feed({ 'subtype': 'scala:feed:weather', 'searchValue': '', 'dataType': 'dynamic', 'name': self.generate_name() })
     data = feed.get_data(searchValue='19713')
     if data['search']['search'] != '19713':
       raise Exception
