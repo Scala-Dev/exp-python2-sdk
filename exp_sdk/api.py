@@ -66,13 +66,13 @@ class CommonResource (Resource):
     return self.uuid
 
   def _get_resource_path (self):
-    return '{}/{}'.format(self._collection_path, self.uuid)
+    return '{0}/{1}'.format(self._collection_path, self.uuid)
 
   @classmethod
   def get (cls, uuid, sdk):
     if not uuid or not isinstance(uuid, basestring):
       return None
-    path = '{}/{}'.format(cls._collection_path, uuid)
+    path = '{0}/{1}'.format(cls._collection_path, uuid)
     try:
       remote_document = sdk.api.get(path)
     except sdk.exceptions.ApiError as exception:
@@ -292,11 +292,11 @@ class Data (Resource):
     self.document['value'] = value
 
   def _get_resource_path(self):
-    return '{}/{}/{}'.format(self._collection_path, self.group, self.key)
+    return '{0}/{1}/{2}'.format(self._collection_path, self.group, self.key)
 
   @classmethod
   def get (cls, group, key, sdk):
-    path = '{}/{}/{}'.format(cls._collection_path, group, key)
+    path = '{0}/{1}/{2}'.format(cls._collection_path, group, key)
     try:
       document = sdk.api.get(path)
     except sdk.exceptions.ApiError as exception:
@@ -307,7 +307,7 @@ class Data (Resource):
 
   @classmethod
   def create (cls, group, key, value, sdk):
-    path = '{}/{}/{}'.format(cls._collection_path, group, key)
+    path = '{0}/{1}/{2}'.format(cls._collection_path, group, key)
     document = sdk.api.put(path, value)
     data = cls(document, sdk)
     return data
@@ -316,7 +316,7 @@ class Data (Resource):
     self._document = self._sdk.api.put(self._get_resource_path(), self.value)
 
   def _get_channel_name (self):
-    return 'data:{}:{}'.format(self.group, self.key)
+    return 'data:{0}:{1}'.format(self.group, self.key)
 
 
 
@@ -339,9 +339,9 @@ class Content (CommonResource):
 
   def _get_delivery_url (self):
     auth = self._sdk.authenticator.get_auth()
-    base = '{}/api/delivery'.format(auth['api']['host'])
+    base = '{0}/api/delivery'.format(auth['api']['host'])
     encoded_path = urllib.quote(self.document.get('path'))
-    return '{}/{}?_rt={}'.format(base, encoded_path, auth['restrictedToken'])
+    return '{0}/{1}?_rt={2}'.format(base, encoded_path, auth['restrictedToken'])
 
   def get_url (self):
     if self.subtype == 'scala:content:file':
@@ -352,7 +352,7 @@ class Content (CommonResource):
       return self.document.get('url')
 
   def get_variant_url (self, name):
-    return '{}&variant='.format(self._get_delivery_url(), name)
+    return '{0}&variant='.format(self._get_delivery_url(), name)
 
   def has_variant (self, name):
     return name in [variant['name'] for variant in self.document.get('variants', [])]
@@ -388,7 +388,7 @@ class Api (object):
         self._sdk.logger.debug('API call encountered an unexpected error: %s' % traceback.format_exc())
         raise self._sdk.exceptions.UnexpectedError('API call encountered an unexpected error.')
       else:
-        raise self._sdk.exceptions.ApiError(code=payload.get('code'), message=payload.get('message'), status_code=exception.response.status_code)
+        raise self._sdk.exceptions.ApiError(code=payload.get('code'), message=payload.get('message'), status_code=exception.response.status_code, payload=payload)
     else:
       self._sdk.logger.warn('API call encountered an unexpected error.')
       self._sdk.logger.debug('API call encountered an unexpected error: %s' % traceback.format_exc())
