@@ -69,6 +69,16 @@ class CommonResource (Resource):
     return '{0}/{1}'.format(self._collection_path, self.uuid)
 
   @classmethod
+  def delete_ (cls, uuid, sdk):
+    if not uuid or not isinstance(uuid, basestring):
+      return None
+    path = '{0}/{1}'.format(cls._collection_path, uuid)
+    return sdk.api.delete(path)
+
+  def delete (self):
+    return self._sdk.api.delete(self._get_resource_path())
+
+  @classmethod
   def get (cls, uuid, sdk):
     if not uuid or not isinstance(uuid, basestring):
       return None
@@ -318,7 +328,13 @@ class Data (Resource):
   def _get_channel_name (self):
     return 'data:{0}:{1}'.format(self.group, self.key)
 
+  @classmethod
+  def delete_ (cls, group, key, sdk):
+    path = '{0}/{1}/{2}'.format(cls._collection_path, group, key)
+    sdk.api.delete(path)
 
+  def delete (self):
+    self._sdk.api.delete(self._get_resource_path())
 
 
 class Content (CommonResource):

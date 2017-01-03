@@ -1,4 +1,3 @@
-
 import unittest
 
 from . import utils
@@ -32,3 +31,14 @@ class Test(utils.Device, utils.CommonResourceBase):
     if zones[0].key != 'key_2':
       raise Exception
 
+  def test_delete (self):
+    thing = self.create_valid()
+    uuid = thing.uuid
+    thing.delete()
+    if self.exp.get_thing(uuid):
+      raise Exception
+    thing = self.create_valid()
+    uuid = thing.uuid
+    self.exp.delete_thing(uuid)
+    if self.exp.get_thing(uuid):
+      raise Exception

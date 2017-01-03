@@ -54,3 +54,15 @@ class Test(utils.Device, utils.CommonResourceBase):
     exp = self.exp_sdk.start(**self.user_credentials)
     if exp.get_current_location():
       raise Exception()
+
+  def test_delete (self):
+    location = self.create_valid()
+    uuid = location.uuid
+    location.delete()
+    if self.exp.get_location(uuid):
+      raise Exception
+    location = self.create_valid()
+    uuid = location.uuid
+    self.exp.delete_location(uuid)
+    if self.exp.get_location(uuid):
+      raise Exception

@@ -24,3 +24,14 @@ class Test(utils.Device, utils.CommonResourceBase):
     data = feed.get_data(searchValue='19713')
     if data['search']['search'] != '19713':
       raise Exception
+
+  def test_delete (self):
+    feed = self.create_valid()
+    feed.delete()
+    if self.exp.get_feed(uuid):
+      raise Exception
+    feed = self.create_valid()
+    uuid = feed.uuid
+    self.exp.delete_feed(uuid)
+    if self.exp.get_feed(uuid):
+      raise Exception

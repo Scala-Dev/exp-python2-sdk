@@ -245,6 +245,10 @@ device = exp.create_device({ 'subtype': 'scala:device:player' })
 
 Returns an iterable of devices matching the given query parameters. `params` is a dictionary of query parameters. Iterable also has attributes matching the raw API response document properties (i.e. `total` and `results`).
 
+**`exp.delete_device(uuid=None)`**
+
+Deletes the device with the given uuid.
+
 **`device.get_location()`**
 
 Returns the device's [location](#locations) or `None`.
@@ -256,6 +260,7 @@ Returns a list of the device's [zones](#zones).
 **`device.get_experience()`**
 
 Returns the device's [experience](#experiences) or `None`
+
 
 
 ## Things
@@ -278,6 +283,12 @@ thing = exp.create_thing({ 'subtype': 'scala:thing:rfid', 'id': '[rfid]', 'name'
 
 Returns an iterable of things matching the given query parameters. `params` is a dictionary of query parameters. Iterable also has attributes matching the raw API response document properties (i.e. `total` and `results`).
 
+
+**`exp.delete_thing(uuid=None)`**
+
+Deletes the thing with the given uuid.
+
+
 **`thing.get_location()`**
 
 Returns the thing's [location](#locations) or `None`.
@@ -289,6 +300,8 @@ Returns a list of the thing's [#zones](#zones).
 **`thing.get_experience()`**
 
 Returns the device's [experience](#experiences) or `None`
+
+
 
 
 ## Experiences
@@ -316,6 +329,7 @@ Returns an iterable of experiences matching the given query parameters. `params`
 Returns an iterable of [devices](#devices) that are part of this experience. `params` is a dictionary of query parameters. Iterable also has attributes matching the raw API response document properties (i.e. `total` and `results`).
 
 
+
 ## Locations
 Locations inherit all [common resource methods and attributes](#resources).
 
@@ -336,6 +350,11 @@ Returns a location created based on the supplied document.
 Returns an iterable of locations matching the given query parameters. `params` is a dictionary of query parameters. Iterable also has attributes matching the raw API response document properties (i.e. `total` and `results`).
 
 
+**`exp.delete_location(uuid=None)`**
+
+Deletes the location with the given uuid.
+
+
 **`location.get_devices(params=None)`**
 
 Returns an iterable of [devices](#devices) that are part of this location. `params` is a dictionary of query parameters. Iterable also has attributes matching the raw API response document properties (i.e. `total` and `results`).
@@ -351,6 +370,7 @@ Returns a list of [zones](#zones) that are part of this location.
 **`location.get_layout_url()`**
 
 Returns a url pointing to the location's layout image.
+
 
 
 ## Zones
@@ -404,14 +424,21 @@ Returns an iterable of feeds matching the given query parameters. `params` is a 
 feeds = exp.find_feeds({ 'subtype': 'scala:feed:facebook' })
 ```
 
+
+**`exp.delete_feed(uuid=None)`**
+
+Deletes the feed with the given uuid.
+
+
 **`feed.get_data(**params)`**
 
 Returns the feed's data. For dynamic feeds specify key value query params in `params`.
 
 
+
 ## Data
 
-Data items inherit the [common resource methods and attributes](#resources) `save()`, `refresh()`, and `get_channel()`.
+Data items inherit the [common resource methods and attributes](#resources) `save()`, `refresh()`, `delete()`, and `get_channel()`.
 There is a limit of 16MB per data document.
 
 *Note that data values must be a javascript object, but can contain other primitives.*
@@ -442,6 +469,11 @@ Returns an iterable of data items matching the given query parameters. `params` 
 items = exp.find_data({ 'group': 'cats' })
 ```
 
+**`exp.delete_data(group=None, key=None)`**
+
+Deletes the data item with the given group and key.
+
+
 **`data.key`**
 
 The data item's key. Settable.
@@ -453,6 +485,7 @@ The data item's group. Settable
 **`data.value`**
 
 The data item's value. Settable.
+
 
 
 ## Content
@@ -533,6 +566,11 @@ Returns the channel whose name is contextually associated with this resource.
 channel = experience.get_channel()
 channel.broadcast('hello?')
 ```
+
+**`resource.delete()`**
+
+Deletes the resource.
+
 
 ## Custom Requests
 
