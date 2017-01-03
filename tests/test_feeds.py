@@ -27,6 +27,7 @@ class Test(utils.Device, utils.CommonResourceBase):
 
   def test_delete (self):
     feed = self.create_valid()
+    uuid = feed.uuid
     feed.delete()
     if self.exp.get_feed(uuid):
       raise Exception
