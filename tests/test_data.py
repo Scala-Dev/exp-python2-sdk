@@ -36,3 +36,17 @@ class Test(utils.Device, utils.ResourceBase):
     data = self.exp.get_data(data.group, data.key)
     if data.value['test2'] != 'a':
       raise Exception
+
+  def test_delete (self):
+    data = self.create_valid()
+    key = data.key
+    group = data.group
+    data.delete()
+    if self.exp.get_data(group, key):
+      raise Exception
+    data = self.create_valid()
+    key = data.key
+    group = data.group
+    self.exp.delete_data(group, key)
+    if self.exp.get_data(group, key):
+      raise Exception

@@ -143,6 +143,9 @@ class Exp (object):
   def create_device (self, document=None):
     return self._sdk.api.Device.create(document, self._sdk)
 
+  def delete_device (self, uuid=None):
+    return self._sdk.api.Device.delete_(uuid, self._sdk)
+
 
   def get_thing (self, uuid=None):
     return self._sdk.api.Thing.get(uuid, self._sdk)
@@ -152,6 +155,9 @@ class Exp (object):
 
   def create_thing (self, document=None):
     return self._sdk.api.Thing.create(document, self._sdk)
+
+  def delete_thing (self, uuid=None):
+    return self._sdk.api.Thing.delete_(uuid, self._sdk)
 
 
   def get_experience (self, uuid=None):
@@ -166,6 +172,9 @@ class Exp (object):
   def create_experience (self, document=None):
     return self._sdk.api.Experience.create(document, self._sdk)
 
+  def delete_experience (self, uuid=None):
+    return self._sdk.api.Experience.delete_(uuid, self._sdk)
+
 
   def get_location (self, uuid=None):
     return self._sdk.api.Location.get(uuid, self._sdk)
@@ -176,12 +185,14 @@ class Exp (object):
   def get_current_zones(self):
     return self._sdk.api.Zone.get_current(self._sdk)
 
-
   def find_locations (self, params=None):
     return self._sdk.api.Location.find(params, self._sdk)
 
   def create_location (self, document=None):
     return self._sdk.api.Location.create(document, self._sdk)
+
+  def delete_location (self, uuid=None):
+    return self._sdk.api.Location.delete_(uuid, self._sdk)
 
 
   def get_feed (self, uuid=None):
@@ -193,6 +204,9 @@ class Exp (object):
   def create_feed (self, document=None):
     return self._sdk.api.Feed.create(document, self._sdk)
 
+  def delete_feed (self, uuid=None):
+    return self._sdk.api.Feed.delete_(uuid, self._sdk);
+
 
   def get_data (self, group='default', key=None):
     return self._sdk.api.Data.get(group, key, self._sdk)
@@ -202,6 +216,9 @@ class Exp (object):
 
   def create_data (self, group=None, key=None, value=None):
     return self._sdk.api.Data.create(group, key, value, self._sdk)
+
+  def delete_data(self, group=None, key=None):
+    return self._sdk.api.Data.delete_(group, key, self._sdk)
 
 
   def get_content (self, uuid=None):

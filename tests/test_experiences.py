@@ -39,4 +39,15 @@ class Test(utils.Device, utils.CommonResourceBase):
     exp = self.exp_sdk.start(**self.user_credentials)
     if exp.get_current_experience():
       raise Exception()
-      
+
+  def test_delete (self):
+    experience = self.create_valid()
+    uuid = experience.uuid
+    experience.delete()
+    if self.exp.get_experience(uuid):
+      raise Exception
+    experience = self.create_valid()
+    uuid = experience.uuid
+    self.exp.delete_experience(uuid)
+    if self.exp.get_experience(uuid):
+      raise Exception
