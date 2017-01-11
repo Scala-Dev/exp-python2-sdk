@@ -320,6 +320,10 @@ Returns the current experience or `None`.
 
 Returns an experience created based on the supplied document.
 
+**`exp.delete_experience(uuid=None)`**
+
+Deletes the experience with the given uuid.
+
 **`exp.find_experiences(params=None)`**
 
 Returns an iterable of experiences matching the given query parameters. `params` is a dictionary of query parameters. Iterable also has attributes matching the raw API response document properties (i.e. `total` and `results`).
