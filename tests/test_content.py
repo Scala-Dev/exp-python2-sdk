@@ -67,7 +67,9 @@ class Test(utils.Device, utils.CommonResourceBase):
 
   def test_get_variant_url (self):
     items = self.exp.find_content()
+    print len(items)
     for item in items:
+      # print item.document.keys()
       if not item.get_variant_url('test_variant'):
         raise Exception
 
