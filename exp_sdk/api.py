@@ -356,7 +356,7 @@ class Content (CommonResource):
   def _get_delivery_url (self):
     auth = self._sdk.authenticator.get_auth()
     base = '{0}/api/delivery'.format(auth['api']['host'])
-    encoded_path = urllib.quote(self.document.get('path'))
+    encoded_path = urllib.quote(self.document.get('path').encode('utf-8'))
     return '{0}/{1}?_rt={2}'.format(base, encoded_path, auth['restrictedToken'])
 
   def get_url (self):
