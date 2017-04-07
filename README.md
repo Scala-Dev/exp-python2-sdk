@@ -620,3 +620,25 @@ Send a DELETE request.
 ```python
 exp.delete('/api/location/[uuid]') # Delete a location.
 ```
+
+## Running Python SDK Unit Tests
+
+**Configure**  
+The settings for the test are located in **tests/utils.py**. The *username*, *password*, *api-key*, *test-secret*, and *organization* will have to match those used in the API test configuration.  
+The *host* should be set to the address of the Gateway.  
+
+**Prepare the environment**  
+The SDK requires access to a test API, Network, and Gateway.  The databases the API depends on will have to be seeded with a user, role, organization, devices, and content. 
+Running the API with **NODE_ENV=test** will cause the API to seed these things into the databases.  
+- *API* https://github.com/ScalaInc/exp-api
+- *Gateway* https://github.com/ScalaInc/exp-gateway
+- *Network* https://github.com/ScalaInc/exp-network
+
+**Run the tests**
+
+```bash
+pip install nose
+nosetests
+```
+
+

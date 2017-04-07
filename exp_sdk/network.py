@@ -266,7 +266,7 @@ class _Socket (object):
     Namespace.socket = self
 
     params = { 'token': auth['token'] }
-    self._socket = SocketIO(auth['network']['host'], Namespace=Namespace, params=params, wait_for_connection=False, hurry_interval_in_seconds=5)
+    self._socket = SocketIO(self._sdk.options.get('host'), Namespace=Namespace, params=params, wait_for_connection=False, hurry_interval_in_seconds=5)
 
   def stop (self):
     self._sdk.logger.debug('Disconnecting from network.')
