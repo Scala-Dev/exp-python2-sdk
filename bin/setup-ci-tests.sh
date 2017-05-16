@@ -1,6 +1,11 @@
 
 set -e
 
+sudo add-apt-repository ppa:nginx/stable
+sudo apt-get update
+sudo apt-get install nginx
+
+
 cd ..
 git clone git@github.com:scalainc/exp-api.git
 cd exp-api
